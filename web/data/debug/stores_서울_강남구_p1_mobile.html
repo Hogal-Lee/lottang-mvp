@@ -1,0 +1,1480 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<title>판매처 - 로또6/45판매점 조회</title>
+<meta charset="EUC-KR">
+
+    
+        
+
+
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<link rel="shortcut icon" href="/images/common/favicon.ico" type="image/x-icon">
+<link rel="icon" href="/images/common/favicon.ico" type="image/x-icon">
+<script type="text/javascript" src="/js/jquery-1.9.1.min.js"></script>
+<script type="text/javascript" src="/js/jquery-ui.js"></script>
+<script type="text/javascript" src="/js/common.js" charset="utf-8"></script>
+<script type="text/javascript">
+
+fn_g_init_message("");
+
+var gameUserId = "";
+
+function goGame(){
+	var userId = "";
+	
+	if(userId == '' || userId == null){
+		alert("로그인 후 사용 해주시기 바랍니다.");
+		location.href = "/user.do?method=login";
+		return;
+	}
+	
+	$.ajax({
+		type:"get",                             // 메소드타입
+		url:"https://el.dhlottery.co.kr/portal_login.jsp",    // url
+		dataType:"jsonp",                       // 이부분이 중요 데이타타입을 jsonP로 해줘야 크로스도메인을 이용할수 있다.
+		jsonp : 'callback',                     // 콜백함수 이름 명이다. 
+		timeout:3000,
+		error: function() {                     // 에러날경우 콜백함수
+			alert('접속이 원활하지 않습니다.'); 
+		}, 
+		success: function(data){        		// 성공했을때 콜백함수
+			
+			if(userId == data.userId && data.userId != ""){
+				doGamePopUp("");
+			}else{
+				alert("로그인 세션이 해제 되었습니다.\n다시 한번 로그인해 주시기 바랍니다.");
+				document.location.href = "/user.do?method=logout";
+			}
+	}});		
+}
+
+function goGame(lottoId,agreeType){
+	var userId = "";
+	if(userId == '' || userId == null){
+		alert("로그인 후 사용 해주시기 바랍니다.");
+		location.href = "/user.do?method=login&returnUrl=" + encodeURIComponent('/gameInfo.do?method=lottoMainView&lottoId=' + lottoId);
+		return;
+	}
+	
+	$.ajax({
+		type:"get",                             // 메소드타입
+		url:"https://el.dhlottery.co.kr/portal_login.jsp",    // url
+		dataType:"jsonp",                       // 이부분이 중요 데이타타입을 jsonP로 해줘야 크로스도메인을 이용할수 있다.
+		jsonp : 'callback',                     // 콜백함수 이름 명이다. 
+		timeout:3000,
+		error: function() {                     // 에러날경우 콜백함수
+			alert("시스템이 원활하지 않습니다.\n이용에 불편을 드려 죄송합니다."); 
+		}, 
+		success: function(data){        		// 성공했을때 콜백함수
+			
+			if(userId == data.userId && data.userId != ""){
+				doGamePopUp(lottoId,agreeType);
+			}else{
+				alert("로그인 세션이 해제 되었습니다.\n다시 한번 로그인해 주시기 바랍니다.");
+				document.location.href = "/user.do?method=logout";
+			}
+	}});		
+}
+
+function goGamePnInfo(lottoId,agreeType,svcInfoPnPcMsgYn){
+	var svcInfoPnPcMsgYn = svcInfoPnPcMsgYn;
+
+	if (svcInfoPnPcMsgYn == "Y") {
+		svcInfoPnMsg();
+		return;
+	}
+	
+	var userId = "";
+	if(userId == '' || userId == null){
+		alert("로그인 후 사용 해주시기 바랍니다.");
+		location.href = "/user.do?method=login&returnUrl=" + encodeURIComponent('/gameInfo.do?method=lottoMainView&lottoId=' + lottoId);
+		return;
+	}
+	
+	$.ajax({
+		type:"get",                             // 메소드타입
+		url:"https://el.dhlottery.co.kr/portal_login.jsp",  	// url
+		dataType:"jsonp",                       // 이부분이 중요 데이타타입을 jsonP로 해줘야 크로스도메인을 이용할수 있다.
+		jsonp : 'callback',                     // 콜백함수 이름 명이다. 
+		timeout:3000,
+		error: function() {                     // 에러날경우 콜백함수
+			alert("시스템이 원활하지 않습니다.\n이용에 불편을 드려 죄송합니다."); 
+		}, 
+		success: function(data){        		// 성공했을때 콜백함수
+			
+			if(userId == data.userId && data.userId != ""){
+				doGamePopUp(lottoId,agreeType);
+			}else{
+				alert("로그인 세션이 해제 되었습니다.\n다시 한번 로그인해 주시기 바랍니다.");
+				document.location.href = "/user.do?method=logout";
+			}
+	}});		
+}
+
+function goGameElInfo(lottoId,agreeType,svcInfoElPcMsgYn){
+	var lottoId = lottoId;
+	var svcInfoElPcMsgYn = svcInfoElPcMsgYn;
+
+	// 2024 연마감 관련 코드
+	if (svcInfoElPcMsgYn == "Y") {
+		if (lottoId == "LI21") {	//20241226 sicc_kic 2024년도 트리플럭 판매종료.
+			svcInfoElTrMsg();
+			return;
+		}
+		else if (lottoId == "LI22") {  //20241125 sicc_kic 2024년도 트레져헌터 판매종료.
+			svcInfoElThMsg();
+			return;
+		}
+		else if (lottoId == "LI23") {  //20241226 sicc_kic 2024년도 캐치미 판매종료.
+			svcInfoElCmMsg();
+			return;
+		}
+		else if (lottoId == "LD10") {  //20241125 sicc_kjh 2024년도 스피드키노 판매종료.
+		    svcInfoElSkMsg();
+			return;
+		}
+		else if (lottoId == "LD11") {  //20241112 sicc_khj 2024년도 메가빙고 판매종료.
+			svcInfoElMbMsg();
+			return;
+		}
+		else if (lottoId == "LD14") {  //20241125 sicc_kic 2024년도 파워볼 판매종료.
+			svcInfoElPbMsg();
+			return;
+		}
+		else if (lottoId == "LD20") {  //20241226 sicc_kic 2024년도 더블잭  판매종료.
+			svcInfoElDmMsg();
+			return;
+		}
+		else {
+			svcInfoElMsg();
+			return;
+		}
+	}
+
+	var userId = "";
+	if(userId == '' || userId == null){
+		alert("로그인 후 사용 해주시기 바랍니다.");
+		location.href = "/user.do?method=login&returnUrl=" + encodeURIComponent('/gameInfo.do?method=lottoMainView&lottoId=' + lottoId);
+		return;
+	}
+	
+	$.ajax({
+		type:"get",                             // 메소드타입
+		url:"https://el.dhlottery.co.kr/portal_login.jsp",  	// url
+		dataType:"jsonp",                       // 이부분이 중요 데이타타입을 jsonP로 해줘야 크로스도메인을 이용할수 있다.
+		jsonp : 'callback',                     // 콜백함수 이름 명이다. 
+		timeout:3000,
+		error: function() {                     // 에러날경우 콜백함수
+			alert("시스템이 원활하지 않습니다.\n이용에 불편을 드려 죄송합니다."); 
+		}, 
+		success: function(data){        		// 성공했을때 콜백함수
+			
+			if(userId == data.userId && data.userId != ""){
+				doGamePopUp(lottoId,agreeType);
+			}else{
+				alert("로그인 세션이 해제 되었습니다.\n다시 한번 로그인해 주시기 바랍니다.");
+				document.location.href = "/user.do?method=logout";
+			}
+	}});		
+}
+
+function goGameEnInfo(lottoId,agreeType,endInfoElPcMsgYn){
+	var endInfoElPcMsgYn = endInfoElPcMsgYn;
+
+	if (endInfoElPcMsgYn == "Y") {
+		endInfoElMsg();
+		return;
+	}
+	
+	var userId = "";
+	if(userId == '' || userId == null){
+		alert("로그인 후 사용 해주시기 바랍니다.");
+		location.href = "/user.do?method=login&returnUrl=" + encodeURIComponent('/gameInfo.do?method=lottoMainView&lottoId=' + lottoId);
+		return;
+	}
+	
+	$.ajax({
+		type:"get",                             // 메소드타입
+		url:"https://el.dhlottery.co.kr/portal_login.jsp",  	// url
+		dataType:"jsonp",                       // 이부분이 중요 데이타타입을 jsonP로 해줘야 크로스도메인을 이용할수 있다.
+		jsonp : 'callback',                     // 콜백함수 이름 명이다. 
+		timeout:3000,
+		error: function() {                     // 에러날경우 콜백함수
+			alert("시스템이 원활하지 않습니다.\n이용에 불편을 드려 죄송합니다."); 
+		}, 
+		success: function(data){        		// 성공했을때 콜백함수
+			
+			if(userId == data.userId && data.userId != ""){
+				doGamePopUp(lottoId,agreeType);
+			}else{
+				alert("로그인 세션이 해제 되었습니다.\n다시 한번 로그인해 주시기 바랍니다.");
+				document.location.href = "/user.do?method=logout";
+			}
+	}});		
+}
+
+function goGameElEnInfo(lottoId,agreeType,svcInfoElPcMsgYn,endInfoElPcMsgYn){
+	var svcInfoElPcMsgYn = svcInfoElPcMsgYn;
+	var endInfoElPcMsgYn = endInfoElPcMsgYn;
+
+	//2023연마감 관련 코드 (캐치미,트래져헌터 조기종료로 추가된코드.)
+	if("N" == "Y"){
+		if(lottoId == "LI23" || lottoId == "LI22" ) {
+			//LI23: 캐치미,  LI22트레져헌터
+			svcInfoElMsgEx();
+			return;
+		}
+	}
+
+	if (svcInfoElPcMsgYn == "Y") {
+			svcInfoElMsg();
+			return;
+	}
+	
+	if (endInfoElPcMsgYn == "Y") {
+		endInfoElMsg();
+		return;
+	}
+	
+	var userId = "";
+	if(userId == '' || userId == null){
+		alert("로그인 후 사용 해주시기 바랍니다.");
+		location.href = "/user.do?method=login&returnUrl=" + encodeURIComponent('/gameInfo.do?method=lottoMainView&lottoId=' + lottoId);
+		return;
+	}
+	
+	$.ajax({
+		type:"get",                             // 메소드타입
+		url:"https://el.dhlottery.co.kr/portal_login.jsp",  	// url
+		dataType:"jsonp",                       // 이부분이 중요 데이타타입을 jsonP로 해줘야 크로스도메인을 이용할수 있다.
+		jsonp : 'callback',                     // 콜백함수 이름 명이다. 
+		timeout:3000,
+		error: function() {                     // 에러날경우 콜백함수
+			alert("시스템이 원활하지 않습니다.\n이용에 불편을 드려 죄송합니다."); 
+		}, 
+		success: function(data){        		// 성공했을때 콜백함수
+			
+			if(userId == data.userId && data.userId != ""){
+				doGamePopUp(lottoId,agreeType);
+			}else{
+				alert("로그인 세션이 해제 되었습니다.\n다시 한번 로그인해 주시기 바랍니다.");
+				document.location.href = "/user.do?method=logout";
+			}
+	}});		
+}
+
+function doGamePopUp(lotid,agreeType){
+	/*
+	* 스피드키노 LD10, 메가빙고 LD11, 더블잭마이더스 LD20, 파워볼 LD14, 트레져헌터 LI22, 트리플럭 LI21 -> gamePop
+	* 캐치미 LI23 -> catchPop
+	*/
+	var type;
+	
+	if( lotid === 'LI23' ){
+		type = 'catchPop';
+	}else{
+		type = 'gamePop';
+	}
+		
+	if($("#agreeChk").is(":checked") || agreeType == 2){
+		var new_popup = centerPop('https://el.dhlottery.co.kr/game/TotalGame.jsp?LottoId='+ lotid, 'type', 1164, 645, 'no');
+	}else{
+		alert('약관에 동의해 주셔야 이용이 가능합니다.');
+		$("#agreeChk").focus();
+	}
+	
+}
+
+//설문조사 팝업
+function popCenter(url){
+	var new_popup =	centerPop(url, '설문조사', 480, 800, 'yes');
+}
+
+//샘플게임 팝업
+function sample_pop(code, userId){
+	
+	//location.href = "/gamezone.do?method=gameZoneMainView";
+	//return;
+	if(userId == null || userId == ""){
+		alert("로그인 후 이용이 가능합니다.");
+		//location.href = "/user.do?method=login";
+		//location.href = "/user.do?method=login&returnUrl=/gamezone.do?method=gameZoneMainView";
+		location.href = "/user.do?method=login&returnUrl=" + encodeURIComponent('/gameInfo.do?method=lottoMainView&lottoId=' + code);
+		return;
+	}
+	if(!$("#sampleAgreeChk").is(":checked")){
+		alert('약관에 동의해 주셔야 이용이 가능합니다.');
+		$("#sampleAgreeChk").focus();
+		return;
+	}
+	
+	$.ajax({
+		type:"POST",                            // 메소드타입
+		url:"/gamezone.do?method=autoAgreeProc",// url
+		dataType:"json",                        // 이부분이 중요 데이타타입을 jsonP로 해줘야 크로스도메인을 이용할수 있다.
+		timeout:3000,
+		async:false,
+		contentType : "application/json; charset=EUC-KR",
+		error: function() {                     // 에러날경우 콜백함수
+			console.log("error");
+		}, 
+		success: function(data){        		// 성공했을때 콜백함수
+			if(data.successYn){
+				console.log(data);
+			}
+		}
+	});
+	
+	$.ajax({
+		type:"get",                             // 메소드타입
+		url:"https://el.dhlottery.co.kr/portal_login.jsp",    // url
+		//data:{"jackpot":strJackpotData},   	// 파라메터 타입
+		dataType:"jsonp",                       // 이부분이 중요 데이타타입을 jsonP로 해줘야 크로스도메인을 이용할수 있다.
+		timeout:3000,
+		jsonp : 'callback',                     // 콜백함수 이름 명이다. 
+		error: function() {                     // 에러날경우 콜백함수
+			alert("시스템이 원활하지 않습니다.\n이용에 불편을 드려 죄송합니다."); 
+		}, 
+		success: function(data){        		// 성공했을때 콜백함수
+			if(userId == data.userId && data.userId != ""){
+				var new_popup =	centerPop('https://el.dhlottery.co.kr/game_sample/TotalGame.jsp?LottoId=' + code, 'gamePop', 1164, 645, 'no');
+			}else{
+				alert("로그인 세션이 해제 되었습니다.\n다시 한번 로그인해 주시기 바랍니다.");
+				document.location.href = "/user.do?method=logout";
+			}
+	}});
+}
+
+//샘플게임(랜덤) 팝업
+function sample_random_pop(userId){
+	
+	//location.href = "/gamezone.do?method=gameZoneMainView";
+	//return;
+	if(userId == null || userId == ""){
+		alert("로그인 후 이용이 가능합니다.");
+		location.href = "/user.do?method=login";
+// 		location.href = "/user.do?method=login&returnUrl=/gamezone.do?method=gameZoneMainView";
+// 		location.href = "/common.do?method=main";
+		return;
+	}
+	
+	var x = Math.floor((Math.random() * 7) + 1 );
+	
+	if(x == 1){
+		var code = "LD14";
+	}else if(x == 2){
+		var code = "LD10";
+	}else if(x == 3){
+		var code = "LD20";
+	}else if(x == 4){
+		var code = "LI23";
+	}else if(x == 5){
+		var code = "LI22";
+	}else if(x == 6){
+		var code = "LI21";
+	}else if(x == 7){
+		var code = "LD11";
+	}
+	
+	$.ajax({
+		type:"get",                             // 메소드타입
+		url:"/gamezone.do?method=autoAgreeProc",// url
+		dataType:"json",                        // 이부분이 중요 데이타타입을 jsonP로 해줘야 크로스도메인을 이용할수 있다.
+		timeout:3000,
+		async:false,
+		contentType : "application/json; charset=EUC-KR",
+		error: function() {                     // 에러날경우 콜백함수
+			console.log("error");
+		}, 
+		success: function(data){        		// 성공했을때 콜백함수
+			if(data.successYn){
+				console.log(data);
+			}
+		}
+	});
+	
+	$.ajax({
+		type:"get",                             // 메소드타입
+		url:"https://el.dhlottery.co.kr/portal_login.jsp",    // url
+		//data:{"jackpot":strJackpotData},   	// 파라메터 타입
+		dataType:"jsonp",                       // 이부분이 중요 데이타타입을 jsonP로 해줘야 크로스도메인을 이용할수 있다.
+		timeout:3000,
+		jsonp : 'callback',                     // 콜백함수 이름 명이다. 
+		error: function() {                     // 에러날경우 콜백함수
+			alert("시스템이 원활하지 않습니다.\n이용에 불편을 드려 죄송합니다."); 
+		}, 
+		success: function(data){        		// 성공했을때 콜백함수
+			if(userId == data.userId && data.userId != ""){
+				var new_popup =	centerPop('https://el.dhlottery.co.kr/game_sample/TotalGame.jsp?LottoId=' + code , 'gamePop', 1164, 645, 'no');
+			}else{
+				alert("로그인 세션이 해제 되었습니다.\n다시 한번 로그인해 주시기 바랍니다.");
+				document.location.href = "/user.do?method=logout";
+			}
+	}});
+}
+
+
+
+function doReserve(){	
+	var userId = "";
+	
+	if(userId == '' || userId == null){
+		alert("로그인 후 사용 해주시기 바랍니다.");
+		//location.href = "/user.do?method=login";
+		location.href = "/user.do?method=login&returnUrl=/gameInfo.do?method=game720Method";
+		return;
+	}
+	
+	$.ajax({
+		type:"get",                             // 메소드타입
+		url:"https://el.dhlottery.co.kr/portal_login.jsp",    // url
+		dataType:"jsonp",                       // 이부분이 중요 데이타타입을 jsonP로 해줘야 크로스도메인을 이용할수 있다.
+		timeout:3000,
+		jsonp : 'callback',                     // 콜백함수 이름 명이다. 
+		error: function() {                     // 에러날경우 콜백함수
+			alert("시스템이 원활하지 않습니다.\n이용에 불편을 드려 죄송합니다."); 
+		}, 
+		success: function(data){        		// 성공했을때 콜백함수
+			if(userId == data.userId && data.userId != ""){
+					window.open('https://el.dhlottery.co.kr/lotto720.do?method=reserveBuy', 'pensionPop' , 'width=930, height=672, left=0, top=0, status=no, toolbar=no, menubar=no, location=no');				
+			}else{
+				alert("로그인 세션이 해제 되었습니다.\n다시 한번 로그인해 주시기 바랍니다.");
+				document.location.href = "/user.do?method=logout";
+			}
+	}});
+				
+}
+
+
+function jackpotViewPop(){
+	var url = "/gameInfo.do?method=jackpotView&lottoId=";	
+	commonPop("", url, 820, 700, 'yes');
+}
+
+function goLottoBuy(agreeType){
+	var userId = "";
+	
+	if(userId == '' || userId == null){
+		alert("로그인 후 사용 해주시기 바랍니다.");
+		//location.href = "/user.do?method=login";
+		location.href = "/user.do?method=login&returnUrl=/gameInfo.do?method=buyLotto";
+		return;
+	}
+	if(agreeType == 1 && !$("#agreeChk").is(":checked")){
+		alert('약관에 동의해 주셔야 이용이 가능합니다.');
+		$("#agreeChk").focus();
+		return;
+	}
+	
+	
+	 $.ajax({
+		type:"get",                             // 메소드타입
+		url:"https://el.dhlottery.co.kr/portal_login.jsp",    // url
+		dataType:"jsonp",                       // 이부분이 중요 데이타타입을 jsonP로 해줘야 크로스도메인을 이용할수 있다.
+		timeout:3000,
+		jsonp : 'callback',                     // 콜백함수 이름 명이다. 
+		error: function() {                     // 에러날경우 콜백함수
+			alert("시스템이 원활하지 않습니다.\n이용에 불편을 드려 죄송합니다."); 
+		}, 
+		success: function(data){        		// 성공했을때 콜백함수
+			if(userId == data.userId && data.userId != ""){
+				var new_popup = centerPop('https://el.dhlottery.co.kr/game/TotalGame.jsp?LottoId=LO40', 'gamePop', 1164, 645, 'no');			
+			}else{
+				alert("로그인 세션이 해제 되었습니다.\n다시 한번 로그인해 주시기 바랍니다.");
+				document.location.href = "/user.do?method=logout";
+			}
+	}});
+				
+}
+
+function loginType(pageCode){
+	var userId = "";
+	var pageCodes = pageCode.split("-");
+}
+
+//엔터만 치면 로그인
+function enter_check_top(eventValue) {
+	if (eventValue == 13) {
+		check_if_Valid_top();
+		return;
+	}
+}
+
+function depositAlert(){
+	alert("12월 2일 이후부터 사용 가능합니다.");
+}
+
+function check_if_Valid_top() {
+	var f = document.frmLogin;
+	
+	if (f.userId.value == "") {
+		alert("아이디를 입력해 주십시오");
+		f.userId.focus();
+		return;
+	}
+	if (f.password.value == "") {
+		alert("비밀번호를 입력해 주세요");
+		f.password.focus();
+		return;
+	}
+	if (f.userId.value.length >= 15) {
+		alert("아이디가 자릿수가 초과되었습니다.");
+		return;
+	}
+	if (f.password.value.length >= 101) {
+		alert("비밀번호가 자릿수가 초과되었습니다.");
+		return;
+	}
+	loginpage_top();
+}
+
+function loginpage_top(){
+	
+	var f = window.document.frmLogin;
+	var pageUrl = document.location.href;
+	var returnUrl="";
+	
+	f.method = "post";
+	//f.target = "jform";
+	if(returnUrl != ''){
+		f.action = "https://www.dhlottery.co.kr/userSsl.do?method=login&returnUrl="+encodeURIComponent(returnUrl);
+	}else{
+		f.action = "https://www.dhlottery.co.kr/userSsl.do?method=login&returnUrl="+encodeURIComponent(pageUrl);
+	}
+	f.submit();
+
+}
+
+function getCookie(uName) {
+	var flag = document.cookie.indexOf(uName + '=');
+	if (flag != -1) {
+		flag += uName.length + 1;
+		end = document.cookie.indexOf(';', flag);
+		if (end == -1)
+			end = document.cookie.length;
+		return unescape(document.cookie.substring(flag, end));
+	}
+}
+
+function gomain() {
+	location.href="/common.do?method=main";
+}
+
+$(document).ready(function() {
+	$("#phoneTopMenu").html("");
+	
+	if(getCookie("userId") != undefined) 
+	{
+		$('.top_userid').val(getCookie("userId"));
+	}
+	
+});
+
+function svcInfoPnMsg() {
+	alert("일시 판매정지 중입니다.\n\n정지 일시 : 2024년 12월 31일 10시\n재개 일시 : 2025년 01월 02일");  
+}
+
+
+function svcInfoElMsg() {
+	alert("일시 판매정지 중입니다.\n\n정지 일시 : 2023년 12월 31일 09시\n재개 일시 : 2024년 01월 02일 10시");
+}
+
+//연마감용 메시지
+function svcInfoElMsgEx() {
+	alert("일시 판매정지 중입니다.\n\n정지 일시 : 2023년 12월 05일 00시\n재개 일시 : 2024년 01월 02일 10시");
+}
+
+//20241112 sicc_khj 2024년도 메가빙고 판매종료.
+function svcInfoElMbMsg() {
+	alert("메가빙고 복권은 판매종료 합니다.\n\n판매종료 일시 : 2024년 11월 13일 00시 \n판매재개 일시 : 2025년 01월 02일 ");	
+}
+
+// 20241125 sicc_kic 2024년도 파워볼 판매종료.
+function svcInfoElPbMsg() {
+	alert("파워볼 복권은 판매종료 합니다.\n\n판매종료 일시 : 2024년 12월 16일 00시 \n판매재개 일시 : 2025년 01월 02일");	
+}
+//20241212 sicc_kic 2024년도 트레져헌터 판매종료.
+function svcInfoElThMsg() {
+	alert("트레져헌터 복권은 판매종료 합니다.\n\n판매종료 일시 : 2024년 12월 23일 00시 \n판매재개 일시 : 2025년 01월 02일");	
+}
+
+//20241217 sicc_kjh 2024년도 스피드키노 판매종료.
+function svcInfoElSkMsg() {
+	alert("스피드키노 복권은 판매종료 합니다.\n\n판매종료 일시 : 2024년 12월 23일 00시 \n판매재개 일시 : 2025년 01월 02일");	
+}
+
+//20241226 sicc_kic 2024년도 트리플럭 판매종료.
+//--25회차 수정	
+function svcInfoElTrMsg() {
+	alert("트리플럭 복권은 판매 정지 중입니다.\n\n정지일시 : 2024년 12월 31일 10시 \n재개 일시 : 2025년 01월 02일");
+}
+
+//20241226 sicc_kic 2024년도 더블잭 판매종료.
+function svcInfoElDmMsg() {
+	alert("더블잭 마이더스 복권은 판매 정지 중입니다.\n\n정지일시 : 2024년 12월 31일 10시 \n재개 일시 : 2025년 01월 02일 ");
+}
+
+//20241226 sicc_kic 2024년도 캐치미 판매종료.
+function svcInfoElCmMsg() {
+	alert("캐치미 복권은 판매 정지 중입니다.\n\n정지일시 : 2024년 12월 31일 10시 \n재개 일시 : 2025년 01월 02일 ");
+}
+function endInfoElMsg() {
+	alert("판매시간이 아닙니다.\n\n판매 시간 : 06시 ~ 24시");
+}
+
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=0">
+<link rel="stylesheet" type="text/css" href="/css/style2@mobile.css">
+<script type="text/javascript" src="/js/mobile_link.js" charset="utf-8"></script>
+<script type="text/javascript" src="/js/function.mobile.js" charset="utf-8"></script>
+
+<script type="text/javascript">
+	// catchme
+	function catchMeGame() {
+		document.location = "https://el.dhlottery.co.kr/game_mobile/catch/game.jsp";
+	}
+	
+	// doublejack
+	function doubleJackGame() {
+		document.location = "https://el.dhlottery.co.kr/game_mobile/djack/game.jsp";
+	}
+	
+	// treasurehunter
+	function treasureHunterGame() {
+		document.location = "https://el.dhlottery.co.kr/game_mobile/thunt/game.jsp";
+	}
+	
+	// speedkeno
+	function speedKenoGame() {
+		document.location = "https://el.dhlottery.co.kr/game_mobile/keno/game.jsp";
+	}
+	
+	// megabingo
+	function megaBingoGame() {
+		document.location = "https://el.dhlottery.co.kr/game_mobile/bingo/game.jsp";
+	}
+	
+	//---------------------------------------- 메가빙고 판매종료----------------------------------------//
+	//20241112 sicc_khj 메가빙고 판매종료.
+	function goMegaBingoGame(wlog,svcInfoElMbMcMsgYn) {
+		var wlog = wlog;
+		var svcInfoElMbMcMsgYn = svcInfoElMbMcMsgYn;
+		
+		if (svcInfoElMbMcMsgYn == "Y") {
+			svcInfoElMbMcMsg();
+			return;
+		} else {
+			if (wlog == "Y") {
+				document.location.href = "/lottoControl.do?method=megaBingoGameMainView";
+			} else {
+				document.location.href = "/lottoControl.do?method=megaBingoGameMainView";
+			}
+		}
+	}
+		
+	//20241112 sicc_khj 메가빙고 판매종료.
+	function svcInfoElMbMcMsg() {
+		alert("메가빙고 복권은 판매종료 합니다.\n\n판매종료 일시 : 2024년 11월 13일 00시 \n판매재개 일시 : 2025년 01월 02일 ");
+	}
+	//-------------------------------------------------------------------------------------------//
+	
+	//---------------------------------------- 파워볼 판매종료----------------------------------------//
+	// 20241125 sicc_kic 2024년도 파워볼 판매종료.
+	function goPowerBallGame(wlog,svcInfoElPbMcMsgYn) {
+		var wlog = wlog;
+		var svcInfoElPbMcMsgYn = svcInfoElPbMcMsgYn;
+		
+		if (svcInfoElPbMcMsgYn == "Y") {
+			svcInfoElPbMcMsg();
+			return;
+		} else {
+			if (wlog == "Y") {
+				document.location.href = "/lottoControl.do?method=powerBallGameMainView";
+			} else {
+				document.location.href = "/lottoControl.do?method=powerBallGameMainView";
+			}
+		}
+	}
+		
+	// 20241125 sicc_kic 2024년도 파워볼 판매종료.
+	function svcInfoElPbMcMsg() {
+		alert("파워볼 복권은 판매종료 합니다.\n\n판매종료 일시 : 2024년 12월 16일 00시 \n판매재개 일시 : 2025년 01월 02일 ");
+	}
+	//---------------------------------------------------------------------------------------------//
+	
+	//---------------------------------------- 트래져헌터 판매종료----------------------------------------//
+	// 20241212 sicc_kic 2024년도 트레져헌터 판매종료.
+	function goTreasureHunterGame(wlog,svcInfoElThMcMsgYn) {
+		var wlog = wlog;
+		var svcInfoElThMcMsgYn = svcInfoElThMcMsgYn;
+		
+		if (svcInfoElThMcMsgYn == "Y") {
+			svcInfoElThMcMsg();
+			return;
+		} else {
+			if (wlog == "Y") {
+				document.location.href = "/lottoControl.do?method=hunterGameMainView";
+			} else {
+				document.location.href = "/lottoControl.do?method=hunterGameMainView";
+			}
+		}
+	}
+		
+	// 20241212 sicc_kic 2024년도 트레져헌터 판매종료.
+	function svcInfoElThMcMsg() {
+		alert("트레져헌터 복권은 판매종료 합니다.\n\n판매종료 일시 : 2024년 12월 23일 00시 \n판매재개 일시 : 2025년 01월 02일 ");
+	}
+	//---------------------------------------------------------------------------------------------//
+	
+	//---------------------------------------- 스피드키노 판매종료----------------------------------------//
+	// 20241217 sicc_kjh 2024년도 스피드키노 판매종료.
+	function goSpeedKenoGame(wlog,svcInfoElSkMcMsgYn) {
+		var wlog = wlog;
+		var svcInfoElSkMcMsgYn = svcInfoElSkMcMsgYn;
+		
+		if (svcInfoElSkMcMsgYn == "Y") {
+		    svcInfoElSkMcMsg();
+			return;
+		} else {
+			if (wlog == "Y") {
+				document.location.href = "/lottoControl.do?method=speedKenoGameMainView";
+			} else {
+				document.location.href = "/lottoControl.do?method=speedKenoGameMainView";
+			}
+		}
+	}
+		
+	// 20241223 sicc_kjh 2024년도 스피드키노 판매종료.
+	function svcInfoElSkMcMsg() {
+		alert("스피드키노 복권은 판매종료 합니다.\n\n판매종료 일시 : 2024년 12월 23일 00시 \n판매재개 일시 : 2025년 01월 02일 ");
+	}
+	//---------------------------------------------------------------------------------------------//
+	
+	//----------------------------------------- 트리플럭 판매종료----------------------------------------//
+	// tripleluck
+	function goTripleLuckGame(wlog,svcInfoElTrMcMsgYn) {
+		var wlog = wlog;
+		var svcInfoElTrMcMsgYn = svcInfoElTrMcMsgYn;
+		
+		if (svcInfoElTrMcMsgYn == "Y") {
+			svcInfoElTrMcMsg();
+			return;
+		} else {
+			if (wlog == "Y") {
+				document.location.href = "/lottoControl.do?method=tripleLuckGameMainView";
+			} else {
+				document.location.href = "/lottoControl.do?method=tripleLuckGameMainView";
+			}
+		}
+	}
+	
+	// 20241125 sicc_kic 2024년도 트리플럭 판매종료.
+	//--25회차 수정
+	function svcInfoElTrMcMsg() {
+		//alert("트리플럭 복권은 판매 정지 중입니다.\n\n정지일시 : 2024년 11월 04일 17시 \n재개 일시 : 2024년 11월 05일 06시 ");
+		alert("트리플럭 복권은 판매종료 합니다.\n\n판매종료 일시 : 2024년 12월 31일 10시 \n판매재개 일시 : 2025년 01월 02일 ");
+	}	
+	//---------------------------------------------------------------------------------------------//
+	
+	//----------------------------------------- 더블잭 판매종료-----------------------------------------//
+	// 20241226 sicc_kic 2024년도 더블잭 판매종료.
+	function goDoubleJackGame(wlog,svcInfoElDmMcMsgYn) {
+		var wlog = wlog;
+		var svcInfoElDmMcMsgYn = svcInfoElDmMcMsgYn;
+		
+		if (svcInfoElDmMcMsgYn == "Y") {
+			svcInfoElDmMcMsg();
+			return;
+		} else {
+			if (wlog == "Y") {
+				document.location.href = "/lottoControl.do?method=doubleJackGameMainView";
+			} else {
+				document.location.href = "/lottoControl.do?method=doubleJackGameMainView";
+			}
+		}
+	}
+		
+	// 20241226 sicc_kic 2024년도 더블잭 판매종료.
+	function svcInfoElDmMcMsg() {
+		alert("더블잭 마이더스 복권은 판매종료 합니다.\n\n판매종료 일시 : 2024년 12월 31일 10시 \n판매재개 일시 : 2025년 01월 02일 ");
+	}
+	//---------------------------------------------------------------------------------------------//
+	
+	//----------------------------------------- 캐치미 판매종료-----------------------------------------//
+	// 20241226 sicc_kic 2024년도 캐치미 판매종료.
+	function goCatchMeGame(wlog,svcInfoElCmMcMsgYn) {
+		var wlog = wlog;
+		var svcInfoElCmMcMsgYn = svcInfoElCmMcMsgYn;
+		
+		if (svcInfoElCmMcMsgYn == "Y") {
+			svcInfoElCmMcMsg();
+			return;
+		} else {
+			if (wlog == "Y") {
+				document.location.href = "/lottoControl.do?method=catchMeGameMainView";
+			} else {
+				document.location.href = "/lottoControl.do?method=catchMeGameMainView";
+			}
+		}
+	}
+		
+	// 20241226 sicc_kic 2024년도 캐치미 판매종료.
+	function svcInfoElCmMcMsg() {
+		alert("캐치미 복권은 판매종료 합니다.\n\n판매종료 일시 : 2024년 12월 31일 10시 \n판매재개 일시 : 2025년 01월 02일 ");
+	}
+	//---------------------------------------------------------------------------------------------//
+	
+	
+	//----------------------------------------- 연금복권720+ 판매종료-----------------------------------------//
+	function goGamePnInfo(lottoId, agreeType, svcInfoPnPcMsgYn) {
+		var svcInfoPnPcMsgYn = svcInfoPnPcMsgYn;
+		
+		if (svcInfoPnPcMsgYn == "Y") {
+			svcInfoPnMsg();
+			return;
+		}
+		
+		document.location.href = "/lotto720.do?method=pensionMoblieMain";
+	}
+	
+	function svcInfoPnMsg() {
+		alert("일시 판매정지 중입니다.\n\n정지 일시 : 2024년 12월 31일 10시\n재개 일시 : 2025년 01월 02일");  
+	}
+	//---------------------------------------------------------------------------------------------//
+	
+</script>
+    
+    
+
+		<script type="text/javascript" src="/js/stat/stat7.js"></script>
+		<script type="text/javascript">
+			var pageCode = "04-01-01";
+			var pageName = "로또6/45판매점 조회";
+			
+			function showMapPage(rltlId) {
+				var popwidth   = 600;
+				var popheight  = 710; 
+				var leftPos    = (screen.width)  ? (screen.width-popwidth)/2   : 0;
+				var topPos     = (screen.height) ? (screen.height-popheight)/2 : 0;   
+				var winName    = "판매점위치";
+				var features   = 'left='+ leftPos+', top='+ topPos;
+				      features += ',location=no, directories=no, menubar=no, scrollbars=auto, status=no';
+				      features += ',width='+ popwidth+ ',height='+ popheight;
+				var reqUrl     = "/store.do?method=topStoreLocation&gbn=lotto&rtlrId="+rltlId;
+
+				 
+					// document.location.href = reqUrl;
+					window.open(reqUrl);
+				
+				
+			}
+			
+			function clearSlt() {
+				$("#sltSIDO").val("");
+				$("#sltGUGUN").val("");
+				$("#rtlrSttus").val("001");
+			}
+			
+			// 시도  mapping
+			var sidoMap = {'서울':'서울특별시', '경기':'경기도', '부산':'부산광역시', '대구':'대구광역시'
+			    , '인천':'인천광역시', '대전':'대전광역시', '울산':'울산광역시', '강원':'강원도'
+			    , '충북':'충청북도', '충남':'충청남도', '광주':'광주광역시', '전북':'전라북도'
+			    , '전남':'전라남도', '경북':'경상북도', '경남':'경상남도', '제주':'제주특별자치도', '세종':'세종특별자치시'};
+			//시도  mapping
+			var sidoMap2 = {'서울특별시':'서울', '경기도':'경기', '부산광역시':'부산', '대구광역시':'대구'
+			    , '인천광역시':'인천', '대전광역시':'대전', '울산광역시':'울산', '강원도':'강원'
+			    , '충청북도':'충북', '충청남도':'충남', '광주광역시':'광주', '전라북도':'전북'
+			    , '전라남도':'전남', '경상북도':'경북', '경상남도':'경남', '제주특별자치도':'제주', '세종특별자치시':'세종'};
+			    
+				var tmpData = null;
+				var exlData = null;
+				var searchType = '1';
+				jQuery( function($) {
+					$.enterCheck = function(cd){
+						if (cd == 13) {
+							$("#searchBtn2").click();
+							return false;
+						}else{
+							return;
+						}
+					};
+					//Paging
+					$.selfSubmit = function(page){
+						$("#nowPage" + searchType).val(page);
+						$.searchList($("#frmSrch" + searchType));
+					};
+					
+					$.stringNvl = function(str){
+						if(str == null || str == ''){
+							str = '';
+						}
+						return str;
+					};
+					
+					$.searchList = function(frmObj){
+						$.ajax({
+		//	 				contentType: "application/x-www-form-urlencoded; charset=euc-kr",
+							type:"post",
+							url: "/store.do?method=sellerInfo645Result",
+							//url: "/game.do?method=sellerInfo645Result",
+							dataType: 'json',
+							data: frmObj.serialize() + "&rtlrSttus=" + $("#rtlrSttus").val(),
+							success: function(data){
+								if(searchType == '2'){
+									$("#searchResult").html($("#srchVal").val());	
+								}else if(searchType == '3'){
+									$("#searchResult").html($("#sltSIDO2").val() + " " + $("#sltGUGUN2").val());
+								}else{
+									$("#searchResult").html($("#sltSIDO").val() + " " + $("#sltGUGUN").val());
+									if($("#nowPage1").val()=="1"){
+										data.nowPage = "1";
+									}
+										
+								}
+								// List Html Create
+								var htmlStr = "";
+								
+								
+
+								
+								/* if (!$$is_phone$$()) {
+									htmlStr += "    <tr><td colspan=\"4\" class=\"tblType1line1\"></td></tr>";
+								} */
+
+								if(data.arr != null && data.arr.length > 0){
+									for(var idx=0; idx<data.arr.length; idx++){
+										
+										
+										 
+											htmlStr += "        <section class=\"store\"><header class=\"name\">" + convertXss(data.arr[idx].FIRMNM);
+
+ 											if(data.arr[idx].DEAL645 == "3")
+ 											{
+ 												htmlStr += "<span class=\"nostore\">폐점</span>";
+ 											}
+											
+											if(data.arr[idx].RTLRID) {
+												htmlStr += "        <a href=\"#\" class=\"map\" onclick=\"showMapPage('" + $.stringNvl(data.arr[idx].RTLRID) + "')\"></a></header>";
+											}
+
+											htmlStr += "        <div class=\"info\"><p class=\"address\">";
+											
+											if(data.arr[idx].DEAL645 == "3") {
+												htmlStr += "            " + $.stringNvl(convertXss(data.arr[idx].BPLCLOCPLC1))  + "";
+												htmlStr += "            " + $.stringNvl(convertXss(data.arr[idx].BPLCLOCPLC2))  + "";
+												htmlStr += "            " + $.stringNvl(convertXss(data.arr[idx].BPLCLOCPLC3))  + "";
+												htmlStr += "            " + $.stringNvl(convertXss(data.arr[idx].BPLCLOCPLC4))  + "";
+												htmlStr += "            " + $.stringNvl(convertXss(data.arr[idx].BPLCLOCPLCDTLADRES))  + "";
+											} else {
+												htmlStr += "            " + $.stringNvl(convertXss(data.arr[idx].BPLCDORODTLADRES))  + "";												
+											}
+											
+											if(data.arr[idx].RTLRSTRTELNO){
+												htmlStr += "        <span class=\"num\">(<a href='tel:" + $.stringNvl(data.arr[idx].RTLRSTRTELNO) + "'>"+$.stringNvl(data.arr[idx].RTLRSTRTELNO)+"</a> )</span>";
+											}
+											htmlStr += "        </p><p class=\"sort\"><strong>취급복권</strong><span class=\"lotto645\">lotto6/45</span></p>";
+											htmlStr += "        </div>";
+											htmlStr += "        </section>";
+										
+										
+										exlData = true;
+									}
+								}else{
+									htmlStr += "    <tr><td colspan=\"4\" class=\"nodata\">조회 결과가 없습니다.</td></tr>";
+									exlData = false;
+								}
+
+								/* if (!$$is_phone$$()) {
+									htmlStr += "    <tr><td colspan=\"4\" class=\"tblType1line1\"></td></tr>";
+									htmlStr += "    <tr><td colspan=\"4\" class=\"tblType1line2\"></td></tr>";
+								} */
+
+								htmlStr += "</tbody>";
+
+								//Paging Html Create
+				                var pagingStr = "";
+				               // pagingStr += "<ul>";
+				                //pagingStr += "  <li>";
+				                if(data.pageIsPrev){
+				                    //pagingStr += "<span><a href=\"javascript:$.selfSubmit('1')\"> <img src=\"/img/common/arrow_01.gif\" border=\"0\"></a></span>";
+				                    //pagingStr += "<span><a href=\"javascript:$.selfSubmit(" + (data.pageStart-1) + ")\"> <img src=\"/img/common/arrow_02.gif\" border=\"0\"></a></span>";
+				                    pagingStr += "<a class=\"go first\" href=\"javascript:$.selfSubmit('1')\">첫페이지</a>";
+				                    pagingStr += "<a class=\"go prev\" href=\"javascript:$.selfSubmit(" + (data.pageStart-1) + ")\">이전 페이지</a>";
+				                }
+				                for(var idx=data.pageStart; idx<=data.pageEnd; idx++){
+				                	if(data.nowPage == idx){
+				                		//pagingStr += "<span><a href=\"#none\" class=\"now\">" + idx + "</a></span>";
+				                		pagingStr += "<a href=\"#\" class=\"current\" title=\"현재 위치\"><strong>" + idx + "</strong></a>";
+				                	}else{
+				                		//pagingStr += "<span><a href=\"javascript:$.selfSubmit('" + idx + "')\">" + idx + "</a></span>";
+				                		pagingStr += "<a href=\"javascript:$.selfSubmit('" + idx + "')\">" + idx + "</a>";
+				                	}
+				                }
+				                if(data.pageIsNext){
+					                //pagingStr += "<span><a href=\"javascript:$.selfSubmit('" + (data.pageEnd + 1) + "')\"> <img src=\"/img/common/arrow_03.gif\" border=\"0\"></a></span>";
+					                //pagingStr += "<span><a href=\"javascript:$.selfSubmit('" + data.totalPage + "')\"> <img src=\"/img/common/arrow_04.gif\" border=\"0\"></a></span>";
+				                	pagingStr += "<a class=\"go next\" href=\"javascript:$.selfSubmit('" + (data.pageEnd + 1) + "')\">다음 페이지</a>";
+				                	pagingStr += "<a class=\"go end\" href=\"javascript:$.selfSubmit('" + data.totalPage + "')\">끝 페이지</a>";
+				                }
+				                //pagingStr += "    </li>";
+				                //pagingStr += "</ul>";
+			                    
+								$("#resultTable").html(htmlStr);
+								$("#pagingView").html(pagingStr);
+							},
+							error : function(data){
+								alert('error');
+							}
+						});
+					};
+					
+					// 지역으로 검색
+					$("#searchBtn1").click(function(event){
+						event.preventDefault();
+						if($("#sltSIDO").val() == "") {
+							
+							alert("시/도 항목을 선택해 주세요.");
+							return;
+							
+						}
+						searchType = '1';
+						$("#nowPage1").val('1');
+						$.searchList($("#frmSrch1"));
+						
+					});
+					
+					// 상호/지역(읍/면/동)으로 검색
+					$("#searchBtn2").click(function(event){
+						event.preventDefault();
+ 						if($("#srchVal").val().trim() == '') {
+ 							
+ 							alert('검색 내용을 입력하세요.');
+ 							$("#srchVal").focus();
+ 							return false;
+ 							
+ 						}
+ 						
+						searchType = '2';
+						$.searchList($("#frmSrch2"));
+						
+					});
+					
+					// 전체 판매 폐점
+					$("#searchBtn3").click(function(event){
+						event.preventDefault();
+						$("#nowPage1").val('1');
+						$.searchList($("#frmSrch"+searchType));
+						
+					});
+					
+					// 행정구역으로 검색
+					$.searchData = function(sido, gugun){
+						searchType = '3';
+						$("#sltSIDO2").val(sido);
+						$("#sltGUGUN2").val(gugun);
+						$.searchList($("#frmSrch3"));
+					};
+					
+					$("#sltSIDO").change(function(){
+						$.searchGUGUN(sidoMap[this.value], '', '1');
+					});
+
+					
+					// excel 다운로드
+					$("#exceldw").click(function(event){
+						event.preventDefault();
+						var dwform = "";
+						if(exlData == false){
+							alert('조회 결과가 없습니다.');
+ 							return false;
+						}
+						if(searchType == 1){
+							dwform = document.frmSrch1;
+						}else if(searchType == 2){
+							dwform = document.frmSrch2;
+						}else if(searchType == 3){
+							dwform = document.frmSrch3;
+						}else{
+							dwform = document.frmSrch4;
+						}
+						dwform.action="/store.do?method=sellerInfo645ResultExcel&rtlrSttus=" + $("#rtlrSttus").val();
+						dwform.submit();
+					});
+					
+					//create 시도
+					$.setMainButton = function(select) {
+						var sidoArray = ['서울', '경기', '부산', '대구', '인천', '대전', '울산', '강원', '충북', '충남', '광주', '전북', '전남', '경북', '경남', '제주', '세종'];
+						$("#subMenu").html("");
+						var htmlStr = "";
+						var sfcIdx = 0;
+						for (var i=0; i < sidoArray.length; i++ ){
+							if(sidoMap2[select] == sidoArray[i]){
+								//htmlStr += '<li class="locBtnOn" >' + sidoArray[i] + '</li>';
+								htmlStr += '<span title="현재 선택된 행정구역" tabindex="0" id="sidoIdx_'+i+'">' + sidoArray[i] + '</span>';
+								sfcIdx = i;
+							}else{
+								htmlStr += '<a href="#none" onclick="$.setMainButton(\'' + sidoMap[sidoArray[i]] + '\');$.searchGUGUN(\'' + sidoMap[sidoArray[i]] + '\', \'\',\'2\'); $.searchData(\'' + sidoArray[i] + '\', \'\'); $(this).focus(); return false;">' + sidoArray[i] + '</a>';
+							}
+						}
+						$("#mainMenuArea").html(htmlStr);
+						$("#sidoIdx_"+sfcIdx).focus();
+					};
+					
+					//create 구군
+					$.setSubButton = function(sido, gugun, data) {
+						if(data == ''){
+							//세종시는 구/군 항목을 출력하지 않는다.
+							if(sido != "세종특별자치시") {
+								
+								data = tmpData;
+								
+							}
+						}
+						
+						$("#subMenu").html("");
+						var htmlStr = "";
+						var gfcIdx = 0;
+						//세종시는 구/군 항목을 출력하지 않는다.
+						if(sido != "세종특별자치시") {
+							
+							for(var idx=0; idx<data.length; idx++){
+								if(gugun == data[idx]){
+									htmlStr += '<span title="현재 선택된 시/군/구" tabindex="0" id="gugunIdx_'+idx+'">' + data[idx] + '</span>';
+									gfcIdx = idx;
+								}else{
+									htmlStr += '<a href="#none" onclick="$.setSubButton(\'' + sido + '\', \'' + data[idx]  + '\', \'\');$.searchData(\'' + sidoMap2[sido] + '\', \'' + data[idx] + '\'); return false;">' + data[idx] + '</a>';
+								}
+							}
+							
+						}
+						$("#subMenu").html(htmlStr);
+						tmpData = data;
+						$("#gugunIdx_"+gfcIdx).focus();
+					};
+					
+					// 구/군 선택 Select 옵션 생성
+					$.setSubSelect = function(sido, data){
+						$('#sltGUGUN').empty();
+						$("#sltGUGUN").append($("<option></option>").val("").text("구/군를 선택해 주세요.") );
+						
+						//세종시는 구/군 항목을 출력하지 않는다.
+						if(sido != "세종특별자치시") {
+							
+							for(var idx=0; idx<data.length; idx++){
+								$("#sltGUGUN").append($("<option></option>").val(data[idx]).text(data[idx]) );
+							}
+							
+						}
+					};
+					
+					$.searchGUGUN = function(strSido, strGugun, type){
+						//시도가 선택이 안되었을때 
+						if(strSido == undefined ) {
+							alert("시도를 선택해 주세요.");
+							return false;
+						}
+							$.ajax({
+//				 				contentType: "application/x-www-form-urlencoded; charset=euc-kr",
+								type:"post",
+								url: "/store.do?method=searchGUGUN",
+								dataType: 'json',
+								data: {'SIDO' : strSido},
+								success: function(data){	
+									if(type == '1'){  //지역으로 검색 시도 변경 시
+										$.setSubSelect(strSido, data);
+									}else if(type == '2'){  //행정구역으로 검색 지역 버튼 클릭 시
+										$.setSubButton(strSido, strGugun, data);
+									}else{
+										//페이지 진입 시
+										$.setSubSelect(strSido, data);
+										$.setSubButton(strSido + "특별시", strGugun, data);
+										$("#sltGUGUN").val(strGugun);
+										$("#searchBtn1").click();
+									}
+								},
+								error : function(data){
+									alert('지역 검색중 오류가 발생하였습니다.');
+								}
+							});						
+					};
+					
+				});
+				
+				$(document).ready(function(){
+					var defaultSIDO  = "서울";
+				    var defaultGUGUN = "강남구";
+					$("#sltSIDO").val(defaultSIDO);
+					$.setMainButton(defaultSIDO + "특별시");
+					$.searchGUGUN (defaultSIDO, defaultGUGUN, '');
+				});
+		</script>
+	</head>
+
+	<body>
+
+    
+    
+<section id="wrapper">
+    <!-- header -->
+    <header id="header">
+        
+
+<a href="#" class="menu_btn">메뉴열기</a>
+<h1 class="logo">
+    <a href="/common.do?method=main">동행복권</a>
+</h1>
+
+	
+	<a href="/userSsl.do?method=myPage" class="mypage">마이페이지</a>
+	
+		
+
+		
+<nav id="gnb">
+    <div class="inner">
+        <div class="btns">
+            <a href="/common.do?method=main" class="home">홈으로 가기</a> 
+            <strong class="logo">동행복권</strong>
+            <a href="#" class="close">메뉴닫기</a>
+        </div>
+        <div class="move_game">
+            <h2>복권정보</h2>
+            <ul>                
+                <li class="lotto lt top"><a href="/gameInfo.do?method=gameMethod">로또6/45</a></li>
+				
+				<li class="pension720 top"><a href="javascript:goGamePnInfo('LP72',2,'N');">연금복권720+</a></li>
+				<li class="speetto top"><a href="/gameInfo.do?method=speettoGameMethod">스피또</a></li>
+ 				
+				<li class="power top"><a href="javascript:goPowerBallGame('N','N');">파워볼</a></li>
+				<li class="triple lt"><a href="javascript:goTripleLuckGame('N','N');">트리플럭</a></li>
+				<li class="kino"><a href="javascript:goSpeedKenoGame('N','N');">스피드키노</a></li>
+				<li class="bingo"><a href="javascript:goMegaBingoGame('N','N');">메가빙고</a></li>
+				<li class="hunter"><a href="javascript:goTreasureHunterGame('N','N');">트레져헌터</a></li>
+				<li class="doublejack lt"><a href="javascript:goDoubleJackGame('N','N');">더블잭마이더스</a></li>
+				<li class="catchme"><a href="javascript:goCatchMeGame('N','N');">캐치미</a></li>
+				
+				<!-- <li class="power top"><a href="/lottoControl.do?method=powerBallGameMainView">파워볼</a></li> -->    			<!-- 20241125 sicc_kic 파워볼 2024년도  판매종료. -->
+				<!-- <li class="kino"><a href="/lottoControl.do?method=speedKenoGameMainView">스피드키노</a></li> -->    				<!-- 20241217 sicc_kjh 스피드키노 2024년도 판매종료. -->
+				<!-- <li class="bingo"><a href="/lottoControl.do?method=megaBingoGameMainView">메가빙고</a></li> -->     				<!-- 20241112 sicc_khj 메가빙고 판매종료. -->
+				<!-- <li class="hunter"><a href="/lottoControl.do?method=hunterGameMainView">트레져헌터</a></li> -->					<!-- 20241212 sicc_kic 트레져헌터 2024년도 판매종료. -->
+				<!-- <li class="doublejack lt"><a href="/lottoControl.do?method=doubleJackGameMainView">더블잭마이더스</a></li> -->		<!-- 20241226 sicc_kic 더블잭 2024년도 판매종료. -->
+				<!-- <li class="catchme"><a href="/lottoControl.do?method=catchMeGameMainView">캐치미</a></li> -->					<!-- 20241226 sicc_kic 캐치미 2024년도 판매종료. -->
+            </ul>
+        </div>
+        <div class="menu" id="mainMenu">
+            <ul>
+                <li>
+                    <h2>
+                        <a href="#">당첨결과</a><!-- 180829 -->
+                    </h2>
+                    <ul>
+                        <li><a href="/gameResult.do?method=byWin">로또6/45</a></li>
+                        <li><a href="/gameResult.do?method=win720">연금복권720+</a></li>
+                        <li><a href="/gameResult.do?method=winList">전자복권</a></li>
+                        <li><a href="/gameResult.do?method=statByNumber">로또6/45 당첨통계</a></li>
+                        <li><a href="/gameResult.do?method=index720">연금복권720+ 당첨통계</a></li>
+                        <li><a href="/gameResult.do?method=notReceiveInfo">로또6/45 미수령 당첨금</a></li>
+                        <li><a href="/gameResult.do?method=highWin">당첨자인터뷰</a></li>
+                    </ul>
+                </li>
+                <li>
+                    <h2>
+                        <a href="#">판매점</a>
+                    </h2>
+                    <ul>
+                        <li><a href="/store.do?method=sellerInfo645">복권 판매점</a></li>
+                        <li><a href="/store.do?method=topStore&pageGubun=L645">당첨 판매점</a></li>
+                    </ul>
+                </li>
+                <li>
+                    <h2>
+                        <a href="#">이벤트</a>
+                    </h2>
+                    <ul>
+                        <li><a href="/event.do?method=Eventend">이벤트</a></li>
+                        <!-- <li><a href="event.do?method=chipInfo">클로버칩 적립</a></li>
+                        <li><a href="event.do?method=chipWishList">클로버칩 사용</a></li> -->
+                    </ul>
+                </li>
+                <li>
+                    <h2>
+                        <a href="#">행복공감</a>
+                    </h2>
+                    <ul>
+                        <li><a href="/happy.do?method=healthCultureRule">건전한 복권문화</a></li>
+                        <li><a href="/happy.do?method=healthCulturePrevent">복권 과몰입 예방법</a></li>
+                        <li><a href="/happy.do?method=fundInfo">복권기금</a></li>
+                    </ul>
+                </li>
+                <li>
+                    <h2>
+                        <a href="#">마이페이지</a>
+                    </h2>
+                    <ul>
+                        <li><a href="/userSsl.do?method=myPage">마이페이지</a></li>
+                        <li><a href="/myPage.do?method=lottoBuyListView">구매/당첨</a></li>
+                        <li><a href="/myPage.do?method=enjoyEval">건전구매 프로그램</a></li>
+                        <li><a href="/myPage.do?method=campainTest">셀프진단평가</a></li><!-- 180816 -->
+                        <li><a href="/myPage.do?method=campainProgram">셀프구매계획</a></li><!-- 180816 -->
+                        <li><a href="/myPage.do?method=depositListView">예치금</a></li>
+                        <li><a href="/myPage.do?method=modifyLogin&modifyType=O">회원탈퇴</a></li>
+                        <!-- 클로버칩 제공 로직 제거 <li><a href="/myPage.do?method=chipList">혜택</a></li> -->
+                    </ul>
+                </li>
+            </ul>
+        </div>
+        <div class="shortcut">
+            <ul>
+                <li><a href="/counsel.do?method=callCenter">고객센터</a></li>
+                <li><a href="/service.do?method=noticeList">공지사항</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+
+    </header>
+    <!-- //header -->
+    
+    
+
+	
+		<nav class="gnbNav">
+			<div class="gnb">
+	<ul>
+		<li><a href="/lotto720.do?method=pensionMoblieMain"><div class="menu01"></div></a></li>
+      	<li><a href="/gameInfo.do?method=gameMethod"><div class="menu02"></div></a></li>
+      	<li><a href="/gameResult.do?method=byWin"><div class="menu03"></div></a></li>
+	</ul>
+	<ul>
+		<li><a href="/store.do?method=sellerInfo645"><div class="menu04"></div></a></li>
+     	<li><a href="/event.do?method=Eventend"><div class="menu05"></div></a></li>
+		<li><a href="/happy.do?method=healthCultureRule"><div class="menu06"></div></a></li>
+	</ul>
+</div>
+		</nav>
+	
+	
+
+
+    <!-- container -->
+    <section id="container" class="section_store list bg">
+        <header class="head_title">
+            <h2>복권 판매점</h2>
+            <a href="javascript:history.back();" class="back">뒤로가기</a>
+        </header>
+        <div class="contents">
+            <div class="tab_basic">
+                <a href="/store.do?method=sellerInfo645" class="active"><span>로또6/45</span></a>
+                <a href="/store.do?method=sellerInfoPrint"><span>즉석/연금복권</span></a>
+            </div>
+            <div class="search_area">
+            	<form id="frmSrch1" name="frmSrch1" method="post" >
+					<input type="hidden" name="searchType" value="1" />
+					<input type="hidden" id="nowPage1" name="nowPage" value=""/>
+                <div class="inp">
+                    <div class="row twin">
+                        <div class="wrap_select">
+                            <label for="sltSIDO" class="hide">시 선택</label>
+                            <select id="sltSIDO" name="sltSIDO">
+								<option value="">시/도 선택</option>
+								<option value="경기" >경기</option>
+								<option value="인천" >인천</option>
+								<option value="강원" >강원</option>
+								<option value="충북" >충북</option>
+								<option value="충남" >충남</option>
+								<option value="경북" >경북</option>
+								<option value="경남" >경남</option>
+								<option value="울산" >울산</option>
+								<option value="전북" >전북</option>
+								<option value="전남" >전남</option>
+								<option value="제주" >제주</option>
+								<option value="서울" >서울</option>
+								<option value="대전" >대전</option>
+								<option value="대구" >대구</option>
+								<option value="부산" >부산</option>
+								<option value="광주" >광주</option>
+								<option value="세종" >세종</option>
+                            </select>
+                        </div>
+                        <div class="wrap_select">
+                            <label for="sltGUGUN" class="hide">구 선택</label>
+							<select class="ml6 mt8" name="sltGUGUN" id="sltGUGUN">
+								<option value="">구/군를 선택해 주세요.</option>
+							</select>
+                        </div>
+                        <input type="hidden"  id="rtlrSttus" name="rtlrSttus" value="001">
+                        <a href="javascript:void(0);" id="searchBtn1" class="btn_dgray medium"><span>조회하기</span></a>
+                    </div>
+                </div>
+                </form>
+                <p class="result">검색결과 : <span class="f_blue_bold" id="searchResult"></span><!-- <span class="extra">폐점된 판매점입니다.</span> --></p>
+            </div>
+            <div class="list_store" id="resultTable">
+            </div>
+            <!-- 180718 -->
+            <div class="pagination" id="pagingView"></div>
+            <!-- //180718 -->
+        </div>
+    </section>
+    <!-- //container -->
+    <!-- footer -->
+    <footer id="footer">
+        
+
+
+<div class="contact">
+	<div class="tel">
+		<strong><span>상담전화 </span><a href="tel:15886450">1588-6450</a></strong>
+		<p>월-금, 일요일 : 06:00 - 24:00<span>토요일 : 06:00 - 21:00</span></p>
+	</div>
+	<div class="one">
+		<strong>1대1 상담</strong>
+		<p>월-금요일 : 09:00 - 18:00<span>토,일 및 법정공휴일 휴무</span></p>
+	</div>
+</div>
+<div class="btns">
+	
+	   
+	   
+	       <a href="https://m.dhlottery.co.kr/user.do?method=loginm" class="btn_wht xsmall"><span>로그인</span></a>
+	   
+	
+	<a href="/counsel.do?method=callCenter" class="btn_wht xsmall"><span>고객센터</span></a>
+</div>
+<div class="clause">
+	<ul>
+		<li><strong><a href="clause.do?method=footerPrivate">개인정보처리방침</a></strong></li>
+		<li><a href="clause.do?method=mobileUseClause">이용약관</a></li>
+	</ul>
+</div>
+    </footer>
+    <!-- //footer -->
+</section>
+    
+
+    
+    
+
+	</body>
+</html>

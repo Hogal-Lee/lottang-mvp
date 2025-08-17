@@ -1,0 +1,3468 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<title>동행복권</title>
+<meta charset="EUC-KR">
+
+    
+    
+        
+
+
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<link rel="shortcut icon" href="/images/common/favicon.ico" type="image/x-icon">
+<link rel="icon" href="/images/common/favicon.ico" type="image/x-icon">
+<script type="text/javascript" src="/js/jquery-1.9.1.min.js"></script>
+<script type="text/javascript" src="/js/jquery-ui.js"></script>
+<script type="text/javascript" src="/js/common.js" charset="utf-8"></script>
+<script type="text/javascript">
+
+fn_g_init_message("");
+
+var gameUserId = "";
+
+function goGame(){
+	var userId = "";
+	
+	if(userId == '' || userId == null){
+		alert("로그인 후 사용 해주시기 바랍니다.");
+		location.href = "/user.do?method=login";
+		return;
+	}
+	
+	$.ajax({
+		type:"get",                             // 메소드타입
+		url:"https://el.dhlottery.co.kr/portal_login.jsp",    // url
+		dataType:"jsonp",                       // 이부분이 중요 데이타타입을 jsonP로 해줘야 크로스도메인을 이용할수 있다.
+		jsonp : 'callback',                     // 콜백함수 이름 명이다. 
+		timeout:3000,
+		error: function() {                     // 에러날경우 콜백함수
+			alert('접속이 원활하지 않습니다.'); 
+		}, 
+		success: function(data){        		// 성공했을때 콜백함수
+			
+			if(userId == data.userId && data.userId != ""){
+				doGamePopUp("");
+			}else{
+				alert("로그인 세션이 해제 되었습니다.\n다시 한번 로그인해 주시기 바랍니다.");
+				document.location.href = "/user.do?method=logout";
+			}
+	}});		
+}
+
+function goGame(lottoId,agreeType){
+	var userId = "";
+	if(userId == '' || userId == null){
+		alert("로그인 후 사용 해주시기 바랍니다.");
+		location.href = "/user.do?method=login&returnUrl=" + encodeURIComponent('/gameInfo.do?method=lottoMainView&lottoId=' + lottoId);
+		return;
+	}
+	
+	$.ajax({
+		type:"get",                             // 메소드타입
+		url:"https://el.dhlottery.co.kr/portal_login.jsp",    // url
+		dataType:"jsonp",                       // 이부분이 중요 데이타타입을 jsonP로 해줘야 크로스도메인을 이용할수 있다.
+		jsonp : 'callback',                     // 콜백함수 이름 명이다. 
+		timeout:3000,
+		error: function() {                     // 에러날경우 콜백함수
+			alert("시스템이 원활하지 않습니다.\n이용에 불편을 드려 죄송합니다."); 
+		}, 
+		success: function(data){        		// 성공했을때 콜백함수
+			
+			if(userId == data.userId && data.userId != ""){
+				doGamePopUp(lottoId,agreeType);
+			}else{
+				alert("로그인 세션이 해제 되었습니다.\n다시 한번 로그인해 주시기 바랍니다.");
+				document.location.href = "/user.do?method=logout";
+			}
+	}});		
+}
+
+function goGamePnInfo(lottoId,agreeType,svcInfoPnPcMsgYn){
+	var svcInfoPnPcMsgYn = svcInfoPnPcMsgYn;
+
+	if (svcInfoPnPcMsgYn == "Y") {
+		svcInfoPnMsg();
+		return;
+	}
+	
+	var userId = "";
+	if(userId == '' || userId == null){
+		alert("로그인 후 사용 해주시기 바랍니다.");
+		location.href = "/user.do?method=login&returnUrl=" + encodeURIComponent('/gameInfo.do?method=lottoMainView&lottoId=' + lottoId);
+		return;
+	}
+	
+	$.ajax({
+		type:"get",                             // 메소드타입
+		url:"https://el.dhlottery.co.kr/portal_login.jsp",  	// url
+		dataType:"jsonp",                       // 이부분이 중요 데이타타입을 jsonP로 해줘야 크로스도메인을 이용할수 있다.
+		jsonp : 'callback',                     // 콜백함수 이름 명이다. 
+		timeout:3000,
+		error: function() {                     // 에러날경우 콜백함수
+			alert("시스템이 원활하지 않습니다.\n이용에 불편을 드려 죄송합니다."); 
+		}, 
+		success: function(data){        		// 성공했을때 콜백함수
+			
+			if(userId == data.userId && data.userId != ""){
+				doGamePopUp(lottoId,agreeType);
+			}else{
+				alert("로그인 세션이 해제 되었습니다.\n다시 한번 로그인해 주시기 바랍니다.");
+				document.location.href = "/user.do?method=logout";
+			}
+	}});		
+}
+
+function goGameElInfo(lottoId,agreeType,svcInfoElPcMsgYn){
+	var lottoId = lottoId;
+	var svcInfoElPcMsgYn = svcInfoElPcMsgYn;
+
+	// 2024 연마감 관련 코드
+	if (svcInfoElPcMsgYn == "Y") {
+		if (lottoId == "LI21") {	//20241226 sicc_kic 2024년도 트리플럭 판매종료.
+			svcInfoElTrMsg();
+			return;
+		}
+		else if (lottoId == "LI22") {  //20241125 sicc_kic 2024년도 트레져헌터 판매종료.
+			svcInfoElThMsg();
+			return;
+		}
+		else if (lottoId == "LI23") {  //20241226 sicc_kic 2024년도 캐치미 판매종료.
+			svcInfoElCmMsg();
+			return;
+		}
+		else if (lottoId == "LD10") {  //20241125 sicc_kjh 2024년도 스피드키노 판매종료.
+		    svcInfoElSkMsg();
+			return;
+		}
+		else if (lottoId == "LD11") {  //20241112 sicc_khj 2024년도 메가빙고 판매종료.
+			svcInfoElMbMsg();
+			return;
+		}
+		else if (lottoId == "LD14") {  //20241125 sicc_kic 2024년도 파워볼 판매종료.
+			svcInfoElPbMsg();
+			return;
+		}
+		else if (lottoId == "LD20") {  //20241226 sicc_kic 2024년도 더블잭  판매종료.
+			svcInfoElDmMsg();
+			return;
+		}
+		else {
+			svcInfoElMsg();
+			return;
+		}
+	}
+
+	var userId = "";
+	if(userId == '' || userId == null){
+		alert("로그인 후 사용 해주시기 바랍니다.");
+		location.href = "/user.do?method=login&returnUrl=" + encodeURIComponent('/gameInfo.do?method=lottoMainView&lottoId=' + lottoId);
+		return;
+	}
+	
+	$.ajax({
+		type:"get",                             // 메소드타입
+		url:"https://el.dhlottery.co.kr/portal_login.jsp",  	// url
+		dataType:"jsonp",                       // 이부분이 중요 데이타타입을 jsonP로 해줘야 크로스도메인을 이용할수 있다.
+		jsonp : 'callback',                     // 콜백함수 이름 명이다. 
+		timeout:3000,
+		error: function() {                     // 에러날경우 콜백함수
+			alert("시스템이 원활하지 않습니다.\n이용에 불편을 드려 죄송합니다."); 
+		}, 
+		success: function(data){        		// 성공했을때 콜백함수
+			
+			if(userId == data.userId && data.userId != ""){
+				doGamePopUp(lottoId,agreeType);
+			}else{
+				alert("로그인 세션이 해제 되었습니다.\n다시 한번 로그인해 주시기 바랍니다.");
+				document.location.href = "/user.do?method=logout";
+			}
+	}});		
+}
+
+function goGameEnInfo(lottoId,agreeType,endInfoElPcMsgYn){
+	var endInfoElPcMsgYn = endInfoElPcMsgYn;
+
+	if (endInfoElPcMsgYn == "Y") {
+		endInfoElMsg();
+		return;
+	}
+	
+	var userId = "";
+	if(userId == '' || userId == null){
+		alert("로그인 후 사용 해주시기 바랍니다.");
+		location.href = "/user.do?method=login&returnUrl=" + encodeURIComponent('/gameInfo.do?method=lottoMainView&lottoId=' + lottoId);
+		return;
+	}
+	
+	$.ajax({
+		type:"get",                             // 메소드타입
+		url:"https://el.dhlottery.co.kr/portal_login.jsp",  	// url
+		dataType:"jsonp",                       // 이부분이 중요 데이타타입을 jsonP로 해줘야 크로스도메인을 이용할수 있다.
+		jsonp : 'callback',                     // 콜백함수 이름 명이다. 
+		timeout:3000,
+		error: function() {                     // 에러날경우 콜백함수
+			alert("시스템이 원활하지 않습니다.\n이용에 불편을 드려 죄송합니다."); 
+		}, 
+		success: function(data){        		// 성공했을때 콜백함수
+			
+			if(userId == data.userId && data.userId != ""){
+				doGamePopUp(lottoId,agreeType);
+			}else{
+				alert("로그인 세션이 해제 되었습니다.\n다시 한번 로그인해 주시기 바랍니다.");
+				document.location.href = "/user.do?method=logout";
+			}
+	}});		
+}
+
+function goGameElEnInfo(lottoId,agreeType,svcInfoElPcMsgYn,endInfoElPcMsgYn){
+	var svcInfoElPcMsgYn = svcInfoElPcMsgYn;
+	var endInfoElPcMsgYn = endInfoElPcMsgYn;
+
+	//2023연마감 관련 코드 (캐치미,트래져헌터 조기종료로 추가된코드.)
+	if("N" == "Y"){
+		if(lottoId == "LI23" || lottoId == "LI22" ) {
+			//LI23: 캐치미,  LI22트레져헌터
+			svcInfoElMsgEx();
+			return;
+		}
+	}
+
+	if (svcInfoElPcMsgYn == "Y") {
+			svcInfoElMsg();
+			return;
+	}
+	
+	if (endInfoElPcMsgYn == "Y") {
+		endInfoElMsg();
+		return;
+	}
+	
+	var userId = "";
+	if(userId == '' || userId == null){
+		alert("로그인 후 사용 해주시기 바랍니다.");
+		location.href = "/user.do?method=login&returnUrl=" + encodeURIComponent('/gameInfo.do?method=lottoMainView&lottoId=' + lottoId);
+		return;
+	}
+	
+	$.ajax({
+		type:"get",                             // 메소드타입
+		url:"https://el.dhlottery.co.kr/portal_login.jsp",  	// url
+		dataType:"jsonp",                       // 이부분이 중요 데이타타입을 jsonP로 해줘야 크로스도메인을 이용할수 있다.
+		jsonp : 'callback',                     // 콜백함수 이름 명이다. 
+		timeout:3000,
+		error: function() {                     // 에러날경우 콜백함수
+			alert("시스템이 원활하지 않습니다.\n이용에 불편을 드려 죄송합니다."); 
+		}, 
+		success: function(data){        		// 성공했을때 콜백함수
+			
+			if(userId == data.userId && data.userId != ""){
+				doGamePopUp(lottoId,agreeType);
+			}else{
+				alert("로그인 세션이 해제 되었습니다.\n다시 한번 로그인해 주시기 바랍니다.");
+				document.location.href = "/user.do?method=logout";
+			}
+	}});		
+}
+
+function doGamePopUp(lotid,agreeType){
+	/*
+	* 스피드키노 LD10, 메가빙고 LD11, 더블잭마이더스 LD20, 파워볼 LD14, 트레져헌터 LI22, 트리플럭 LI21 -> gamePop
+	* 캐치미 LI23 -> catchPop
+	*/
+	var type;
+	
+	if( lotid === 'LI23' ){
+		type = 'catchPop';
+	}else{
+		type = 'gamePop';
+	}
+		
+	if($("#agreeChk").is(":checked") || agreeType == 2){
+		var new_popup = centerPop('https://el.dhlottery.co.kr/game/TotalGame.jsp?LottoId='+ lotid, 'type', 1164, 645, 'no');
+	}else{
+		alert('약관에 동의해 주셔야 이용이 가능합니다.');
+		$("#agreeChk").focus();
+	}
+	
+}
+
+//설문조사 팝업
+function popCenter(url){
+	var new_popup =	centerPop(url, '설문조사', 480, 800, 'yes');
+}
+
+//샘플게임 팝업
+function sample_pop(code, userId){
+	
+	//location.href = "/gamezone.do?method=gameZoneMainView";
+	//return;
+	if(userId == null || userId == ""){
+		alert("로그인 후 이용이 가능합니다.");
+		//location.href = "/user.do?method=login";
+		//location.href = "/user.do?method=login&returnUrl=/gamezone.do?method=gameZoneMainView";
+		location.href = "/user.do?method=login&returnUrl=" + encodeURIComponent('/gameInfo.do?method=lottoMainView&lottoId=' + code);
+		return;
+	}
+	if(!$("#sampleAgreeChk").is(":checked")){
+		alert('약관에 동의해 주셔야 이용이 가능합니다.');
+		$("#sampleAgreeChk").focus();
+		return;
+	}
+	
+	$.ajax({
+		type:"POST",                            // 메소드타입
+		url:"/gamezone.do?method=autoAgreeProc",// url
+		dataType:"json",                        // 이부분이 중요 데이타타입을 jsonP로 해줘야 크로스도메인을 이용할수 있다.
+		timeout:3000,
+		async:false,
+		contentType : "application/json; charset=EUC-KR",
+		error: function() {                     // 에러날경우 콜백함수
+			console.log("error");
+		}, 
+		success: function(data){        		// 성공했을때 콜백함수
+			if(data.successYn){
+				console.log(data);
+			}
+		}
+	});
+	
+	$.ajax({
+		type:"get",                             // 메소드타입
+		url:"https://el.dhlottery.co.kr/portal_login.jsp",    // url
+		//data:{"jackpot":strJackpotData},   	// 파라메터 타입
+		dataType:"jsonp",                       // 이부분이 중요 데이타타입을 jsonP로 해줘야 크로스도메인을 이용할수 있다.
+		timeout:3000,
+		jsonp : 'callback',                     // 콜백함수 이름 명이다. 
+		error: function() {                     // 에러날경우 콜백함수
+			alert("시스템이 원활하지 않습니다.\n이용에 불편을 드려 죄송합니다."); 
+		}, 
+		success: function(data){        		// 성공했을때 콜백함수
+			if(userId == data.userId && data.userId != ""){
+				var new_popup =	centerPop('https://el.dhlottery.co.kr/game_sample/TotalGame.jsp?LottoId=' + code, 'gamePop', 1164, 645, 'no');
+			}else{
+				alert("로그인 세션이 해제 되었습니다.\n다시 한번 로그인해 주시기 바랍니다.");
+				document.location.href = "/user.do?method=logout";
+			}
+	}});
+}
+
+//샘플게임(랜덤) 팝업
+function sample_random_pop(userId){
+	
+	//location.href = "/gamezone.do?method=gameZoneMainView";
+	//return;
+	if(userId == null || userId == ""){
+		alert("로그인 후 이용이 가능합니다.");
+		location.href = "/user.do?method=login";
+// 		location.href = "/user.do?method=login&returnUrl=/gamezone.do?method=gameZoneMainView";
+// 		location.href = "/common.do?method=main";
+		return;
+	}
+	
+	var x = Math.floor((Math.random() * 7) + 1 );
+	
+	if(x == 1){
+		var code = "LD14";
+	}else if(x == 2){
+		var code = "LD10";
+	}else if(x == 3){
+		var code = "LD20";
+	}else if(x == 4){
+		var code = "LI23";
+	}else if(x == 5){
+		var code = "LI22";
+	}else if(x == 6){
+		var code = "LI21";
+	}else if(x == 7){
+		var code = "LD11";
+	}
+	
+	$.ajax({
+		type:"get",                             // 메소드타입
+		url:"/gamezone.do?method=autoAgreeProc",// url
+		dataType:"json",                        // 이부분이 중요 데이타타입을 jsonP로 해줘야 크로스도메인을 이용할수 있다.
+		timeout:3000,
+		async:false,
+		contentType : "application/json; charset=EUC-KR",
+		error: function() {                     // 에러날경우 콜백함수
+			console.log("error");
+		}, 
+		success: function(data){        		// 성공했을때 콜백함수
+			if(data.successYn){
+				console.log(data);
+			}
+		}
+	});
+	
+	$.ajax({
+		type:"get",                             // 메소드타입
+		url:"https://el.dhlottery.co.kr/portal_login.jsp",    // url
+		//data:{"jackpot":strJackpotData},   	// 파라메터 타입
+		dataType:"jsonp",                       // 이부분이 중요 데이타타입을 jsonP로 해줘야 크로스도메인을 이용할수 있다.
+		timeout:3000,
+		jsonp : 'callback',                     // 콜백함수 이름 명이다. 
+		error: function() {                     // 에러날경우 콜백함수
+			alert("시스템이 원활하지 않습니다.\n이용에 불편을 드려 죄송합니다."); 
+		}, 
+		success: function(data){        		// 성공했을때 콜백함수
+			if(userId == data.userId && data.userId != ""){
+				var new_popup =	centerPop('https://el.dhlottery.co.kr/game_sample/TotalGame.jsp?LottoId=' + code , 'gamePop', 1164, 645, 'no');
+			}else{
+				alert("로그인 세션이 해제 되었습니다.\n다시 한번 로그인해 주시기 바랍니다.");
+				document.location.href = "/user.do?method=logout";
+			}
+	}});
+}
+
+
+
+function doReserve(){	
+	var userId = "";
+	
+	if(userId == '' || userId == null){
+		alert("로그인 후 사용 해주시기 바랍니다.");
+		//location.href = "/user.do?method=login";
+		location.href = "/user.do?method=login&returnUrl=/gameInfo.do?method=game720Method";
+		return;
+	}
+	
+	$.ajax({
+		type:"get",                             // 메소드타입
+		url:"https://el.dhlottery.co.kr/portal_login.jsp",    // url
+		dataType:"jsonp",                       // 이부분이 중요 데이타타입을 jsonP로 해줘야 크로스도메인을 이용할수 있다.
+		timeout:3000,
+		jsonp : 'callback',                     // 콜백함수 이름 명이다. 
+		error: function() {                     // 에러날경우 콜백함수
+			alert("시스템이 원활하지 않습니다.\n이용에 불편을 드려 죄송합니다."); 
+		}, 
+		success: function(data){        		// 성공했을때 콜백함수
+			if(userId == data.userId && data.userId != ""){
+					window.open('https://el.dhlottery.co.kr/lotto720.do?method=reserveBuy', 'pensionPop' , 'width=930, height=672, left=0, top=0, status=no, toolbar=no, menubar=no, location=no');				
+			}else{
+				alert("로그인 세션이 해제 되었습니다.\n다시 한번 로그인해 주시기 바랍니다.");
+				document.location.href = "/user.do?method=logout";
+			}
+	}});
+				
+}
+
+
+function jackpotViewPop(){
+	var url = "/gameInfo.do?method=jackpotView&lottoId=";	
+	commonPop("", url, 820, 700, 'yes');
+}
+
+function goLottoBuy(agreeType){
+	var userId = "";
+	
+	if(userId == '' || userId == null){
+		alert("로그인 후 사용 해주시기 바랍니다.");
+		//location.href = "/user.do?method=login";
+		location.href = "/user.do?method=login&returnUrl=/gameInfo.do?method=buyLotto";
+		return;
+	}
+	if(agreeType == 1 && !$("#agreeChk").is(":checked")){
+		alert('약관에 동의해 주셔야 이용이 가능합니다.');
+		$("#agreeChk").focus();
+		return;
+	}
+	
+	
+	 $.ajax({
+		type:"get",                             // 메소드타입
+		url:"https://el.dhlottery.co.kr/portal_login.jsp",    // url
+		dataType:"jsonp",                       // 이부분이 중요 데이타타입을 jsonP로 해줘야 크로스도메인을 이용할수 있다.
+		timeout:3000,
+		jsonp : 'callback',                     // 콜백함수 이름 명이다. 
+		error: function() {                     // 에러날경우 콜백함수
+			alert("시스템이 원활하지 않습니다.\n이용에 불편을 드려 죄송합니다."); 
+		}, 
+		success: function(data){        		// 성공했을때 콜백함수
+			if(userId == data.userId && data.userId != ""){
+				var new_popup = centerPop('https://el.dhlottery.co.kr/game/TotalGame.jsp?LottoId=LO40', 'gamePop', 1164, 645, 'no');			
+			}else{
+				alert("로그인 세션이 해제 되었습니다.\n다시 한번 로그인해 주시기 바랍니다.");
+				document.location.href = "/user.do?method=logout";
+			}
+	}});
+				
+}
+
+function loginType(pageCode){
+	var userId = "";
+	var pageCodes = pageCode.split("-");
+}
+
+//엔터만 치면 로그인
+function enter_check_top(eventValue) {
+	if (eventValue == 13) {
+		check_if_Valid_top();
+		return;
+	}
+}
+
+function depositAlert(){
+	alert("12월 2일 이후부터 사용 가능합니다.");
+}
+
+function check_if_Valid_top() {
+	var f = document.frmLogin;
+	
+	if (f.userId.value == "") {
+		alert("아이디를 입력해 주십시오");
+		f.userId.focus();
+		return;
+	}
+	if (f.password.value == "") {
+		alert("비밀번호를 입력해 주세요");
+		f.password.focus();
+		return;
+	}
+	if (f.userId.value.length >= 15) {
+		alert("아이디가 자릿수가 초과되었습니다.");
+		return;
+	}
+	if (f.password.value.length >= 101) {
+		alert("비밀번호가 자릿수가 초과되었습니다.");
+		return;
+	}
+	loginpage_top();
+}
+
+function loginpage_top(){
+	
+	var f = window.document.frmLogin;
+	var pageUrl = document.location.href;
+	var returnUrl="";
+	
+	f.method = "post";
+	//f.target = "jform";
+	if(returnUrl != ''){
+		f.action = "https://www.dhlottery.co.kr/userSsl.do?method=login&returnUrl="+encodeURIComponent(returnUrl);
+	}else{
+		f.action = "https://www.dhlottery.co.kr/userSsl.do?method=login&returnUrl="+encodeURIComponent(pageUrl);
+	}
+	f.submit();
+
+}
+
+function getCookie(uName) {
+	var flag = document.cookie.indexOf(uName + '=');
+	if (flag != -1) {
+		flag += uName.length + 1;
+		end = document.cookie.indexOf(';', flag);
+		if (end == -1)
+			end = document.cookie.length;
+		return unescape(document.cookie.substring(flag, end));
+	}
+}
+
+function gomain() {
+	location.href="/common.do?method=main";
+}
+
+$(document).ready(function() {
+	$("#phoneTopMenu").html("");
+	
+	if(getCookie("userId") != undefined) 
+	{
+		$('.top_userid').val(getCookie("userId"));
+	}
+	
+});
+
+function svcInfoPnMsg() {
+	alert("일시 판매정지 중입니다.\n\n정지 일시 : 2024년 12월 31일 10시\n재개 일시 : 2025년 01월 02일");  
+}
+
+
+function svcInfoElMsg() {
+	alert("일시 판매정지 중입니다.\n\n정지 일시 : 2023년 12월 31일 09시\n재개 일시 : 2024년 01월 02일 10시");
+}
+
+//연마감용 메시지
+function svcInfoElMsgEx() {
+	alert("일시 판매정지 중입니다.\n\n정지 일시 : 2023년 12월 05일 00시\n재개 일시 : 2024년 01월 02일 10시");
+}
+
+//20241112 sicc_khj 2024년도 메가빙고 판매종료.
+function svcInfoElMbMsg() {
+	alert("메가빙고 복권은 판매종료 합니다.\n\n판매종료 일시 : 2024년 11월 13일 00시 \n판매재개 일시 : 2025년 01월 02일 ");	
+}
+
+// 20241125 sicc_kic 2024년도 파워볼 판매종료.
+function svcInfoElPbMsg() {
+	alert("파워볼 복권은 판매종료 합니다.\n\n판매종료 일시 : 2024년 12월 16일 00시 \n판매재개 일시 : 2025년 01월 02일");	
+}
+//20241212 sicc_kic 2024년도 트레져헌터 판매종료.
+function svcInfoElThMsg() {
+	alert("트레져헌터 복권은 판매종료 합니다.\n\n판매종료 일시 : 2024년 12월 23일 00시 \n판매재개 일시 : 2025년 01월 02일");	
+}
+
+//20241217 sicc_kjh 2024년도 스피드키노 판매종료.
+function svcInfoElSkMsg() {
+	alert("스피드키노 복권은 판매종료 합니다.\n\n판매종료 일시 : 2024년 12월 23일 00시 \n판매재개 일시 : 2025년 01월 02일");	
+}
+
+//20241226 sicc_kic 2024년도 트리플럭 판매종료.
+//--25회차 수정	
+function svcInfoElTrMsg() {
+	alert("트리플럭 복권은 판매 정지 중입니다.\n\n정지일시 : 2024년 12월 31일 10시 \n재개 일시 : 2025년 01월 02일");
+}
+
+//20241226 sicc_kic 2024년도 더블잭 판매종료.
+function svcInfoElDmMsg() {
+	alert("더블잭 마이더스 복권은 판매 정지 중입니다.\n\n정지일시 : 2024년 12월 31일 10시 \n재개 일시 : 2025년 01월 02일 ");
+}
+
+//20241226 sicc_kic 2024년도 캐치미 판매종료.
+function svcInfoElCmMsg() {
+	alert("캐치미 복권은 판매 정지 중입니다.\n\n정지일시 : 2024년 12월 31일 10시 \n재개 일시 : 2025년 01월 02일 ");
+}
+function endInfoElMsg() {
+	alert("판매시간이 아닙니다.\n\n판매 시간 : 06시 ~ 24시");
+}
+
+</script>
+<!-- <link rel="stylesheet" type="text/css" href="/css/nanum_gothic_dev.css" /> -->
+<link rel="stylesheet" type="text/css" href="/css/styles.css">
+<script type="text/javascript" src="/js/function.js" charset="utf-8"></script>
+<script type="text/javascript" src="/js/InsertFlash.js" charset="utf-8"></script>
+<script type="text/javascript" src="/js/link.js" charset="utf-8"></script>
+<script type="text/javascript" src="/js/makePCookie.js" charset="utf-8"></script>
+<script type="text/javascript" src="/js/jquery.cookie.js"></script>
+<script type="text/javascript" src="/js/webfont.js"></script>
+<script>
+if (navigator.platform && /win16|win32|win64|mac/ig.test(navigator.platform) == false) {
+	if ('https://m.dhlottery.co.kr'.indexOf(location.hostname) == -1 || 'https://m.dhlottery.co.kr'.indexOf(location.hostname) == -1 ) {
+	  	location.href = 'https://m.dhlottery.co.kr';
+	}
+}
+</script>
+    
+
+
+
+	<!-- JSP PAGE CODE 및 PAGE NAME 정의 --------->
+	<script type="text/javascript">
+
+		var pageCode = "04-02-01";
+		var pageName = "회차별";
+		
+		var hdrw = 1;
+
+		if (false) {
+			pageCode = "04-02-01";
+		}
+
+		$(document).ready(function() {
+			
+			if("1" != ""){
+				$("#dwrNoList").val("1");
+				if ("1" < 601) hdrw = 2;
+			}
+			
+			$('#searchBtn').click(function() {
+				var schKey = $("#schKey").val();
+				var schVal = $("#schVal").val();
+				
+// 				alert("schKey : " + schKey);
+// 				alert("schVal : " + schVal);
+				
+// 				if(schKey != ""){
+// 					if(schVal == ""){
+// 						alert("검색 값을 입력 하셔야 합니다.");
+// 						return false;
+// 					}
+// 				}
+				$("#nowPage").val(1);
+				$("#frm").attr({action:"/store.do?method=topStore&pageGubun=L645"}).submit();
+			});
+			
+			$('#hdrwComb').click(function(e) {
+				if($('#hdrwComb').val() != hdrw) {
+					hdrw = $('#hdrwComb').val();
+					$("#drwNo").empty();
+					var str = "";
+					
+					if(hdrw == 1) {
+						for (var i="1184"; i>600; i--) {
+							str += "<option value=" + i;
+							if(i == "1") {
+								str += " seleted";
+							}
+							str += " >" + i + "</option>"
+						}
+					} else {
+						for (var i=600; i>0; i--) {
+							str += "<option value=" + i;
+							if(i == "1") {
+								str += " seleted";
+							}
+							str += " >" + i + "</option>"
+						}
+					}
+					$("#drwNo").append(str);
+				}
+			}); 
+		});
+		
+		function selfSubmit(page){
+			if(page != null && page !="undefined"){
+				$("#nowPage").val(page);
+			}
+			$("#frm").attr({action:"/store.do?method=topStore&pageGubun=L645"}).submit();
+		}
+		
+		
+		function showMapPage(rltlId) {
+			var popwidth   = 600;
+			var popheight  = 710; 
+			var leftPos       = (screen.width)  ? (screen.width-popwidth)/2   : 0;
+			var topPos      = (screen.height) ? (screen.height-popheight)/2 : 0;   
+			var winName   = "팝업이름";
+			var features   = 'left='+ leftPos+', top='+ topPos;
+			      features  += ',location=no, directories=no, menubar=no, scrollbars=auto, status=no';
+			      features  += ',width='+ popwidth+ ',height='+ popheight;
+			//var reqUrl       = "/lotto645Confirm.do?method=topStoreLocation&gbn=lotto&rtlrId="+rltlId;
+			var reqUrl       = "/store.do?method=topStoreLocation&gbn=lotto&rtlrId="+rltlId;
+
+			if (false) {
+				// document.location.href = reqUrl;
+				window.open(reqUrl);
+			} else {
+				window.open(reqUrl, winName, features);
+			}
+		}
+
+	</script>
+
+	
+
+</head>
+<body>
+
+    
+
+    
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div>
+
+	
+		
+		
+			
+<script type="text/javascript">
+	$(document).ready(function(){
+		var curPage = document.location.href;
+		var mainBannerUrl = "/common.do?method=getMainBannerList";
+		
+		if(curPage.indexOf("https") > -1){
+			mainBannerUrl = "/userSsl.do?method=getMainBannerList";
+		}
+
+		$.ajax({
+			type: 'POST',
+		    url: mainBannerUrl,
+		    data : "",
+		    dataType    :'json',
+		    async:false,
+			success : function(data) { // 성공했을때 콜백함수
+				var mainBanner = "";
+				
+				if(data.returnValue == "fail"){
+					//alert("사용중인 배너가 없습니다.");
+					return;
+				}
+				
+				if (data.mainBannerList == null || data.mainBannerList == "") {
+					mainBanner = "";
+				} else {
+					for(var i=0; i<data.mainBannerList.length ; i++) {
+						mainBanner += "<div class='band_banner' style='background:"+data.mainBannerList[i].bgColor+"';>";
+						/* mainBanner += "<div class='band_banner' style='background:#e0e6f4';>"; */
+						mainBanner += "<div class='inner_band_banner' ;>";
+						mainBanner += "<a href='"+data.mainBannerList[i].link+"' target='"+data.mainBannerList[i].target+"' class='img_banner'>"
+						mainBanner += "<img src='/img/event/main_banner/"+data.mainBannerList[i].physclFileNm+"'></a>";
+						/* mainBanner += "<img src='/images/event/main_banner/pc_banner.png'></a>"; */
+						mainBanner += "<a class='btn_close' href='javascript:today_close_popup();'>하루 동안 보지 않기</a>";
+						mainBanner += "</div>";
+						mainBanner += "</div>";
+					}
+				}
+
+				$("#band_banner").html(mainBanner);
+			},
+			error : function(data) {
+				//alert("사용중인 배너가 없습니다.");
+			}
+		});
+		
+		var banner = $(".slider > li"),
+			bannerLength = banner.length,
+			targetNum = 0, //보여질 숫자
+			currentNum = 0, //보여지고있는 숫자
+			speed = 400, //애니메이트 속도
+			delay = 5000, //재생타임
+			isPlay = true, //자동재생중일때 true
+			isTween = false; //false일때만 이동가능
+
+		function initBanner(){
+			if(bannerLength > 1){//배너가 두개 이상일때만 슬라이드실행
+				bnrSlide();
+			}
+			todayCookie();//쿠키실행
+		}
+
+		function bnrSlide(){
+			banner.not(":first").hide();
+			timer = setInterval(nextMove, delay); //인터벌
+
+			//아이콘 클릭
+			$(".icon_count a").on("click", function(e){
+				e.preventDefault();
+				clearInterval(timer);
+				var iconIdx = $(this).index();
+				if(iconIdx == currentNum){
+					if(isPlay == true){
+						timer = setInterval(nextMove, delay);
+					} else {
+						return;
+					}
+
+				} else {
+					bannerMove(iconIdx);
+				}
+			});
+
+			//stop 클릭
+			$(".play_stop .stop").on("click", function(e){
+				e.preventDefault();
+				clearInterval(timer);
+				$(this).hide();
+				$(".play_stop .play").show();
+				isPlay = false;
+			});
+
+			//play 클릭
+			$(".play_stop .play").on("click", function(e){
+				e.preventDefault();
+				timer = setInterval(nextMove, delay);
+				$(this).hide();
+				$(".play_stop .stop").show();
+				isPlay = true;
+			});
+
+			function nextMove(){
+				targetNum = currentNum +1;
+				if(targetNum >= bannerLength){
+					targetNum = 0;
+				}
+				bannerMove(targetNum);
+			}
+
+			function bannerMove(idx){
+				if(isTween){return;}
+				isTween = true; //이동불가
+				iconReplace(idx);
+
+				banner.eq(currentNum).css("z-index", 0);
+				banner.eq(idx).css("z-index", 1).fadeIn(speed, function(){
+					banner.eq(currentNum).hide();
+					tweenComplete(idx);
+				});
+			}
+
+			//아이콘 리플레이스
+			function iconReplace(idx){
+				$(".icon_count a").removeClass("on");
+				$(".icon_count a").eq(idx).addClass("on");
+			}
+
+			//애니메이트 완료
+			function tweenComplete(idx){
+				currentNum = idx;
+				isTween = false;
+				if(isPlay){
+					if(timer)clearInterval(timer);
+					timer = setInterval(nextMove, delay);
+				}
+			}
+		}
+
+		function todayCookie(){
+			var banner_cookie = $.cookie('cookie');
+
+			if(banner_cookie == undefined){//쿠키가없으면
+				$(".top_banner_wrap").show();//팝업 열기
+
+				$(".btn_top_bnr_close").on("click", function(e){//팝업 닫기 클릭
+					e.preventDefault();
+
+					if($("#today").is(":checked")){
+						$.cookie('cookie', 'today', {expires: 1, page:'/'});//메인만 쿠키 1일 설정
+						$(".top_banner_wrap").slideUp(400);
+					} else {
+						$(".top_banner_wrap").slideUp(400);
+					}
+				});
+			}
+		}
+
+		initBanner();
+		
+		if( $.cookie("show_popup") == "false" ) {
+			close_popup();
+		} else {
+			$("#band_banner").show();
+		}
+	});
+	
+	function close_popup() {
+		$("#band_banner").hide();
+	}
+	
+	function today_close_popup() {
+		today = new Date();
+		$.cookie( "show_popup", "false", { path: "/", expires : 1 } );
+		close_popup();
+	}
+</script>
+<ul id="skipnavigation">
+	<li><a href="#article">본문 바로가기</a></li>
+</ul>
+
+<header class="topHeader">
+	<!-- 배너 -->
+	<div id="band_banner"></div>
+
+	<div class="header_con">
+	   	<div class="logo">
+			<h1><a href="/common.do?method=main">동행복권</a></h1>
+	    </div>
+		<div class="top_menu">
+			
+<script type="text/javascript" src="/js/link.js" charset="utf-8"></script>
+<form name="frmLogin">
+	<div class="topAccount">
+	
+		
+		
+			<ul class="account">
+				<li class="log"><a class="btn_common sml" href="/user.do?method=login&returnUrl=">로그인</a></li>
+				<li class="devide"><a class="btn_common sml blu" href="/loginJoin.do?method=joinFormAgree">회원가입</a></li>
+				<li><a class="btn_common sml gblu" href="/userSsl.do?method=myPage">마이페이지</a></li>
+				<li><a class="btn_common sml gblu" href="/counsel.do?method=callCenter">고객센터</a></li>
+			</ul>
+		
+	
+</div>
+</form>
+
+
+
+
+
+
+		</div>
+	</div>
+</header>
+		
+	
+</div>
+
+
+
+
+
+	
+	
+		<div class="nav_wrap" style="z-index:999;">
+			<nav class="gnbNav">
+				
+	<div id="gnb" class="gnb">
+        <ul>
+            <!-- <li class="gnb1"><a href="/gameBuy.do?method=gameBuyHome"></a></li> -->
+            <li class="gnb1"><a href="javascript:void(0)">복권구매</a>
+            	<div class="group">
+	            	<ul>
+	            		<li class="gnb1_1"><a href="javascript:goLottoBuy(2);" title="새창 열림" onclick="javascript:goWiseLogMain('');"><strong>로또 6/45</strong><span>매주 토요일 추첨<br>6개 숫자 직접 선택</span></a></li>
+	            		<li class="gnb1_5"><a href="javascript:goGameElInfo('LI21',2,'N');" title="트리플럭" onclick="javascript:goWiseLogMain('');"><strong>트리플럭</strong><span>한번에 3게임! 1등 5억원<br>즉석식 긁는 복권</span></a></li>
+	            		<li class="gnb1_9"><a href="javascript:goGameElInfo('LD20',2,'N');" title="더블잭마이더스" onclick="javascript:goWiseLogMain('');"><strong>더블잭마이더스</strong><span>같은 그림이 나오면 당첨<br>구매즉시 당첨확인</span></a></li>
+	            		<li class="gnb1_8"><a href="javascript:goGameElInfo('LI23',2,'N');" title="캐치미" onclick="javascript:goWiseLogMain('');"><strong>캐치미</strong><span>당첨금 x 5배 선택가능<br>보너스 게임 기회도~</span></a></li>
+	            		<li class="gnb1_7"><a href="javascript:goGameElInfo('LI22',2,'N');" title="트레져헌터" onclick="javascript:goWiseLogMain('');"><strong>트레져헌터</strong><span>왕관이 5개 나오면 1등<br>심볼매치형 즉석복권</span></a></li>
+	            		<li class="gnb1_6"><a href="javascript:goGamePnInfo('LP72',2,'N');" title="연금복권720+" onclick="javascript:goWiseLogMain('');"><strong>연금복권720+</strong><span>매주 목요일 추첨<br>700만원씩 20년 지급</span></a></li>
+	            		<li class="gnb1_2"><a href="javascript:goGameElInfo('LD14',2,'N');" title="파워볼" onclick="javascript:goWiseLogMain('');"><strong>파워볼</strong><span>5분마다 추첨<br>최고당첨금 3억원</span></a></li>
+	            		<li class="gnb1_3"><a href="javascript:goGameElInfo('LD10',2,'N');" title="스피드키노" onclick="javascript:goWiseLogMain('');"><strong>스피드키노</strong><span>5분마다 추첨<br>숫자 10개 일치시 1등</span></a></li>
+	            		<li class="gnb1_4"><a href="javascript:goGameElInfo('LD11',2,'N');" title="메가빙고" onclick="javascript:goWiseLogMain('');"><strong>메가빙고</strong><span>8분마다 추첨<br>가장 높은 당첨확률</span></a></li>
+	            		<li class="gnb1_10"><a href="javascript:sample_random_pop('');" title="샘플게임" onclick="javascript:goWiseLogMain('');"><span>샘플게임 <br>해보기</span></a></li>
+	            		
+	            		<!-- 20241226 sicc_kic 전자게임 판매종료 정리. -->
+	            		
+	            		
+	            		
+	            		
+	            		
+						
+	            	</ul>
+            	</div>
+            </li>
+            <li class="basic gnb2"><a href="/gameInfo.do?method=gameMethod">복권정보</a>
+            	<div class="group">
+	            	<ul>
+	            		<li><a href="/gameInfo.do?method=gameMethod">로또6/45</a>
+		               		<ul class="snb_dep3">
+		               			<li><a href="/gameInfo.do?method=gameMethod">로또 6/45 소개</a></li>
+		               		 	<li><a href="/gameInfo.do?method=buyLotto">구매하기</a></li>
+		                   		<li><a href="/gameInfo.do?method=buyInfo">구매방법</a></li>
+		                   		<li><a href="/gameInfo.do?method=lotMethod">추첨안내</a></li>
+		                   		<li><a href="/gameInfo.do?method=statHistory">로또 히스토리</a></li>
+	                		</ul>
+	                	</li>
+	                	
+	                	<li><a href="/gameInfo.do?method=game720Guide">연금복권720+</a>
+	                  		<ul class="snb_dep3">
+	                  			<li><a href="/gameInfo.do?method=game720Guide">연금복권720+ 소개</a></li>
+	                      		<li><a href="/gameInfo.do?method=game720Method">구매하기</a></li>
+	                      		<li><a href="/gameInfo.do?method=game720Info">구매방법</a></li>
+	                      		<li><a href="/gameInfo.do?method=game720lotInfo">추첨안내</a></li>
+	                   		</ul>
+	                	</li>
+	                	<li><a href="/gameInfo.do?method=inetbokBuyInfo">전자복권</a>
+	               			<ul class="snb_dep3">
+								<li><a href="/gameInfo.do?method=inetbokBuyInfo">게임안내</a></li>
+								<li><a href="/gameInfo.do?method=lottoMainView&lottoId=LD14">파워볼</a></li>
+								<li><a href="/gameInfo.do?method=lottoMainView&lottoId=LD10">스피드키노</a></li>
+								<li><a href="/gameInfo.do?method=lottoMainView&lottoId=LD11">메가빙고</a></li>
+								<li><a href="/gameInfo.do?method=lottoMainView&lottoId=LI21">트리플럭</a></li>
+								<li><a href="/gameInfo.do?method=lottoMainView&lottoId=LI22">트레져헌터</a></li>
+								<li><a href="/gameInfo.do?method=lottoMainView&lottoId=LD20">더블잭마이더스</a></li>
+								<li><a href="/gameInfo.do?method=lottoMainView&lottoId=LI23">캐치미</a></li>
+							</ul>
+	                	</li>
+	                	<li><a href="/gameInfo.do?method=speettoGameMethod">즉석식인쇄복권</a>
+							<ul class="snb_dep3">
+								<li><a href="/gameInfo.do?method=speettoGameMethod">즉석식인쇄복권 소개</a></li>
+								<li><a href="/gameInfo.do?method=speetto500">스피또 500</a></li>
+								<li><a href="/gameInfo.do?method=speetto1000">스피또 1000</a></li>
+								<li><a href="/gameInfo.do?method=speetto2000">스피또 2000</a></li>
+							</ul>
+	                	</li>
+	            	</ul>
+            	</div>
+            </li>
+            <li class="basic gnb3"><a href="/gameResult.do?method=byWin">당첨결과</a>
+            	<div class="group">
+	            	<ul>
+	            		<li><a href="/gameResult.do?method=byWin">로또6/45</a>
+							<ul class="snb_dep3">
+								<li><a href="/gameResult.do?method=byWin">회차별 당첨번호</a></li>
+								<li><a href="/gameResult.do?method=myWin">내번호 당첨확인</a></li>
+								<li><a href="/gameResult.do?method=allWin">당첨내역</a></li>
+								<li><a href="/gameResult.do?method=locInfo645">당첨금 지급안내</a></li>
+								<li><a href="/gameResult.do?method=lotTv">추첨방송 다시보기</a></li>
+								<li><a href="/gameResult.do?method=visitWinList">추첨방송 참관신청</a></li>
+							</ul>
+	            		</li>
+	            		
+	            		<li><a href="/gameResult.do?method=win720">연금복권720+</a>
+							<ul class="snb_dep3">
+								<li><a href="/gameResult.do?method=win720">회차별 당첨번호</a></li>
+								<li><a href="/gameResult.do?method=myWin720">내번호 당첨확인</a></li>
+								<li><a href="/gameResult.do?method=winResult720">당첨내역</a></li>
+								<li><a href="/gameResult.do?method=locInfo720">당첨금 지급안내</a></li>
+								<li><a href="/gameResult.do?method=lotInfo720">추첨방송 다시보기</a></li>
+								<li><a href="/gameResult.do?method=visitWinList&tabGbn=2">추첨방송 참관신청</a></li>
+							</ul>
+	            		</li>
+	            		<li><a href="/gameResult.do?method=winList">전자복권</a></li>
+	            		<li><a href="/gameResult.do?method=speettoWin">즉석식인쇄복권</a>
+							<ul class="snb_dep3">
+								<li><a href="/gameResult.do?method=speettoWin">당첨내역</a></li>
+								<li><a href="/gameResult.do?method=speettoLotInfo">당첨금 지급안내</a></li>
+							</ul>
+	            		</li>
+	            		<li><a href="/gameResult.do?method=statIndex">로또6/45 당첨통계</a>
+							<ul class="snb_dep3">
+								<li><a href="/gameResult.do?method=statIndex">당첨통계</a></li>
+								<li><a href="/gameResult.do?method=statByNumber">번호별 통계</a></li>
+								<li><a href="/gameResult.do?method=statByColor">색상 통계</a></li>
+								<li><a href="/gameResult.do?method=statGroupNum">구간별 출현횟수</a></li>
+								<li><a href="/gameResult.do?method=noViewNumber">기간별 미출현 번호</a></li>
+								<li><a href="/gameResult.do?method=statOddEven">홀짝통계</a></li>
+								<li><a href="/gameResult.do?method=statConsNumber">연속번호 출현</a></li>
+								<!-- <li><a href="/gameResult.do?method=statPattern">패턴분석표</a></li> -->
+							</ul>
+	            		</li>
+	            	</ul>
+	            	<ul>
+	            		
+	            		<li><a href="/gameResult.do?method=index720" class="show_font1">연금복권720+ 당첨통계</a></li>
+	            		<li><a href="/gameResult.do?method=highWin">당첨소식</a>
+							<ul class="snb_dep3">
+								<li><a href="/gameResult.do?method=highWin">당첨자 인터뷰</a></li>
+								<li><a href="/gameResult.do?method=winTalkList&boardType=T">당첨 소감 게시판</a></li>
+							</ul>
+	            		</li>
+	            		<li><a href="/gameResult.do?method=notReceiveInfo">미수령 당첨금</a>
+							<ul class="snb_dep3">
+								<li><a href="/gameResult.do?method=notReceiveInfo">로또6/45</a></li>
+								
+								<li><a href="/gameResult.do?method=noRecieveInfo720">연금복권720+</a></li>
+								<li><a href="/gameResult.do?method=notReceiveInfoElec">전자복권</a></li>
+								<li><a href="/gameResult.do?method=speetoNoGetList">즉석식 인쇄복권</a></li>
+							</ul>
+	            		</li>
+	            	</ul>
+            	</div>
+            </li>
+            <li class="basic gnb4"><a href="/store.do?method=sellerInfo645">판매점</a>
+            	<div class="group">
+	            	<ul>
+	            		<li><a href="/store.do?method=sellerInfo645">구입처 안내</a>
+							<ul class="snb_dep3">
+								<li><a href="/store.do?method=sellerInfo645">로또6/45판매점 조회</a></li>
+								<li><a href="/store.do?method=sellerInfoPrint">즉석 및 연금복권 판매점 조회</a></li>
+							</ul>
+	            		</li>
+	            		<li><a href="/store.do?method=topStore&pageGubun=L645">당첨 판매점</a>
+							<ul class="snb_dep3">
+								<li><a href="/store.do?method=topStore&pageGubun=L645">회차별</a></li>
+								<!-- 
+								<li><a href="/store.do?method=topStoreRank&rank=1&pageGubun=L645">1등 배출점</a></li>
+								<li><a href="/store.do?method=topStoreRank&rank=2&pageGubun=L645">2등 배출점</a></li>
+								-->
+							</ul>
+	            		</li>
+	            	</ul>
+	            </div>
+            </li>
+            <li class="basic gnb5"><a href="/event.do?method=Eventend">이벤트</a>
+            	<div class="group">
+	            	<ul>
+	            		<li><a href="/event.do?method=Eventend">이벤트</a></li>
+	            	</ul>
+	            </div>
+            </li>
+			<li class="basic gnb6"><a href="/counsel.do?method=knowledge">행복공감</a>
+				<div class="group">
+					<ul>
+						<li><a href="/counsel.do?method=knowledge">건전한 복권문화</a>
+							<ul class="snb_dep3">
+								<li><a href="/counsel.do?method=knowledge">복권바로알기</a></li>
+								<li><a href="/happy.do?method=healthCultureProc">건전구매 프로그램</a></li>
+								<li><a href="/user.do?method=campainVow">건전화 캠페인</a></li>
+								<li><a href="/happy.do?method=healthCultureRule">건전화 책임규정</a></li>
+								<li><a href="/happy.do?method=healthCulturePrevent">복권 과몰입 예방법</a></li>
+								<li><a href="/happy.do?method=counselInfo">중독예방 및 상담안내</a></li>
+							</ul>
+						</li>
+						<li><a href="/happy.do?method=fundInfo">복권기금</a>
+							<ul class="snb_dep3">
+								<li><a href="/happy.do?method=fundInfo">복권기금소개</a></li>
+								<li><a href="/happy.do?method=fundAdvance">기금사업활동</a></li>
+							</ul>
+						</li>
+						<li><a href="/happy.do?method=happySympathyService">행복공감봉사단</a></li>
+						<li><a href="/hero.do?method=info">동행히어로</a>
+							<ul class="snb_dep3">
+								<li><a href="/hero.do?method=info">동행히어로란?</a></li>
+								<li><a href="/hero.do?method=multiList">동행곱하기</a></li>
+								<li><a href="/hero.do?method=plusTemp">동행더하기</a></li>
+								<li><a href="/hero.do?method=divTemp">동행나누기</a></li>
+							</ul>
+						</li>
+						<li><a href="/webToon.do?method=toonList">복권이야기</a>
+							<ul class="snb_dep3">
+								<li><a href="/webToon.do?method=toonList">복권웹툰</a></li>
+							</ul>
+						</li>
+					</ul>
+					<ul>
+						<li><a href="/happy.do?method=fundArchiveList">홍보센터</a>
+							<ul class="snb_dep3">
+								<li><a href="/happy.do?method=fundArchiveList">광고</a></li>
+								<li><a href="/happy.do?method=fundPressPrList">보도자료</a></li>
+								<li><a href="/service.do?method=noticeList">공지사항</a></li>
+							</ul>
+						</li>
+					</ul>
+				</div>
+			</li>
+		</ul>
+	</div>
+<script>
+
+/*
+ * QR안내 페이지 팝업 호출
+**/
+function pop_qr() {
+	var strUrl = "/popup/pop_qr.html";	
+	var popwidth   = 600;
+	var popheight  = 793;
+	var winName    = "QR코드 당첨확인";
+
+	var new_popup = centerPop(strUrl, winName, popwidth, popheight, 'no');
+}
+
+</script>
+			</nav>
+		</div>
+		<div class="containerWrap"><!-- pc일 경우 컨텐츠 영역 감싸는 마크업 추가  -->
+	
+
+
+   
+
+<section class="contentSection">
+	<!--왼쪽-->
+	<nav class="lnbNav">
+		<!-- left menu include -------------->
+			<div id="snb" class="lnb">
+	<h2 id="04" class="lnb_title">판매점</h2>
+	<ul id="lnb" class="lnb_dep1">
+		<li id="04-01"><a href="/store.do?method=sellerInfo645" class="menuLnb"><span>구입처 안내</span></a>
+			<ul class="lnb_dep2">
+				<li id="04-01-01"><a href="/store.do?method=sellerInfo645"><span> 로또6/45판매점 조회</span></a></li>
+				<li id="04-01-02"><a href="/store.do?method=sellerInfoPrint"><span> 즉석 및 연금복권 판매점 조회</span></a></li>
+			</ul>
+		</li>
+		<li id="04-02"><a href="/store.do?method=topStore&pageGubun=L645" class="menuLnb"><span>당첨 판매점</span></a>
+			<ul class="lnb_dep2">
+				<li id="04-02-01"><a href="/store.do?method=topStore&pageGubun=L645"><span> 회차별</span></a></li>
+				<!-- 
+				<li id="04-02-02"><a href="/store.do?method=topStoreRank&rank=1&pageGubun=L645"><span> 1등 배출점</span></a></li>
+				<li id="04-02-03"><a href="/store.do?method=topStoreRank&rank=2&pageGubun=L645"><span> 2등 배출점</span></a></li>
+				-->
+			</ul>
+		</li>
+	</ul>
+</div>
+		<!-- ----------------------------- -->
+	</nav>	
+	<div id="article" class="contentsArticle">
+		<div class="header_article">
+			<h3 class="sub_title"></h3>
+			<p class="location"></p>
+		</div>
+		<div>
+			<div class="content_wrap content_store_win">
+				<!-- ---------------------------------------------------------------------------------------------------- -->
+				
+					<div class="tab_article tab_size5">
+		  				<ul>
+		  					<li class="active"><strong>로또6/45</strong><span class="accessibility">현재 선택됨</span></li>
+		  					<!-- <li><a href="/store.do?method=topStore&pageGubun=L520">연금복권520</a></li> -->
+		  					<li><a href="/store.do?method=topStore&pageGubun=L720">연금복권720+</a></li>
+		  					<li><a href="/store.do?method=topStore&pageGubun=SP2000">스피또2000</a></li>
+		  					<li><a href="/store.do?method=topStore&pageGubun=SP1000">스피또1000</a></li>
+		  					<li><a href="/store.do?method=topStore&pageGubun=SP500">스피또500</a></li>
+		  				</ul>
+	 				</div>
+		 			
+		 			<form name="frm" id="frm" method="post">
+						<input type="hidden" name="method" value="topStore">
+						<input type="hidden" name="nowPage" id="nowPage" value="1">
+						<input type="hidden" name="rankNo" id="rankNo" value="">
+						<input type="hidden" name="gameNo" id="gameNo" value="5133">
+                        <table class="tbl_data tbl_form tbl_search_opt">
+                            <caption>회차별 당첨판매점 검색</caption>
+                            <colgroup>
+                                <col style="width:180px">
+                                <col>
+                            </colgroup>
+                            <tbody>
+                            
+                                <tr>
+                                    <th scope="row">회차</th>
+                                    <td>
+                                    	<select id="hdrwComb" name="hdrwComb" title="회차 선택1">
+										
+											
+												<option value="1">601~1184</option>
+												<option value="2" selected>1~600</option>
+											
+											
+										
+										</select>
+                                    	<select id="drwNo" name="drwNo" title="회차 선택">
+										
+											
+												
+												
+												<option value="600" >600</option>
+												
+												
+												<option value="599" >599</option>
+												
+												
+												<option value="598" >598</option>
+												
+												
+												<option value="597" >597</option>
+												
+												
+												<option value="596" >596</option>
+												
+												
+												<option value="595" >595</option>
+												
+												
+												<option value="594" >594</option>
+												
+												
+												<option value="593" >593</option>
+												
+												
+												<option value="592" >592</option>
+												
+												
+												<option value="591" >591</option>
+												
+												
+												<option value="590" >590</option>
+												
+												
+												<option value="589" >589</option>
+												
+												
+												<option value="588" >588</option>
+												
+												
+												<option value="587" >587</option>
+												
+												
+												<option value="586" >586</option>
+												
+												
+												<option value="585" >585</option>
+												
+												
+												<option value="584" >584</option>
+												
+												
+												<option value="583" >583</option>
+												
+												
+												<option value="582" >582</option>
+												
+												
+												<option value="581" >581</option>
+												
+												
+												<option value="580" >580</option>
+												
+												
+												<option value="579" >579</option>
+												
+												
+												<option value="578" >578</option>
+												
+												
+												<option value="577" >577</option>
+												
+												
+												<option value="576" >576</option>
+												
+												
+												<option value="575" >575</option>
+												
+												
+												<option value="574" >574</option>
+												
+												
+												<option value="573" >573</option>
+												
+												
+												<option value="572" >572</option>
+												
+												
+												<option value="571" >571</option>
+												
+												
+												<option value="570" >570</option>
+												
+												
+												<option value="569" >569</option>
+												
+												
+												<option value="568" >568</option>
+												
+												
+												<option value="567" >567</option>
+												
+												
+												<option value="566" >566</option>
+												
+												
+												<option value="565" >565</option>
+												
+												
+												<option value="564" >564</option>
+												
+												
+												<option value="563" >563</option>
+												
+												
+												<option value="562" >562</option>
+												
+												
+												<option value="561" >561</option>
+												
+												
+												<option value="560" >560</option>
+												
+												
+												<option value="559" >559</option>
+												
+												
+												<option value="558" >558</option>
+												
+												
+												<option value="557" >557</option>
+												
+												
+												<option value="556" >556</option>
+												
+												
+												<option value="555" >555</option>
+												
+												
+												<option value="554" >554</option>
+												
+												
+												<option value="553" >553</option>
+												
+												
+												<option value="552" >552</option>
+												
+												
+												<option value="551" >551</option>
+												
+												
+												<option value="550" >550</option>
+												
+												
+												<option value="549" >549</option>
+												
+												
+												<option value="548" >548</option>
+												
+												
+												<option value="547" >547</option>
+												
+												
+												<option value="546" >546</option>
+												
+												
+												<option value="545" >545</option>
+												
+												
+												<option value="544" >544</option>
+												
+												
+												<option value="543" >543</option>
+												
+												
+												<option value="542" >542</option>
+												
+												
+												<option value="541" >541</option>
+												
+												
+												<option value="540" >540</option>
+												
+												
+												<option value="539" >539</option>
+												
+												
+												<option value="538" >538</option>
+												
+												
+												<option value="537" >537</option>
+												
+												
+												<option value="536" >536</option>
+												
+												
+												<option value="535" >535</option>
+												
+												
+												<option value="534" >534</option>
+												
+												
+												<option value="533" >533</option>
+												
+												
+												<option value="532" >532</option>
+												
+												
+												<option value="531" >531</option>
+												
+												
+												<option value="530" >530</option>
+												
+												
+												<option value="529" >529</option>
+												
+												
+												<option value="528" >528</option>
+												
+												
+												<option value="527" >527</option>
+												
+												
+												<option value="526" >526</option>
+												
+												
+												<option value="525" >525</option>
+												
+												
+												<option value="524" >524</option>
+												
+												
+												<option value="523" >523</option>
+												
+												
+												<option value="522" >522</option>
+												
+												
+												<option value="521" >521</option>
+												
+												
+												<option value="520" >520</option>
+												
+												
+												<option value="519" >519</option>
+												
+												
+												<option value="518" >518</option>
+												
+												
+												<option value="517" >517</option>
+												
+												
+												<option value="516" >516</option>
+												
+												
+												<option value="515" >515</option>
+												
+												
+												<option value="514" >514</option>
+												
+												
+												<option value="513" >513</option>
+												
+												
+												<option value="512" >512</option>
+												
+												
+												<option value="511" >511</option>
+												
+												
+												<option value="510" >510</option>
+												
+												
+												<option value="509" >509</option>
+												
+												
+												<option value="508" >508</option>
+												
+												
+												<option value="507" >507</option>
+												
+												
+												<option value="506" >506</option>
+												
+												
+												<option value="505" >505</option>
+												
+												
+												<option value="504" >504</option>
+												
+												
+												<option value="503" >503</option>
+												
+												
+												<option value="502" >502</option>
+												
+												
+												<option value="501" >501</option>
+												
+												
+												<option value="500" >500</option>
+												
+												
+												<option value="499" >499</option>
+												
+												
+												<option value="498" >498</option>
+												
+												
+												<option value="497" >497</option>
+												
+												
+												<option value="496" >496</option>
+												
+												
+												<option value="495" >495</option>
+												
+												
+												<option value="494" >494</option>
+												
+												
+												<option value="493" >493</option>
+												
+												
+												<option value="492" >492</option>
+												
+												
+												<option value="491" >491</option>
+												
+												
+												<option value="490" >490</option>
+												
+												
+												<option value="489" >489</option>
+												
+												
+												<option value="488" >488</option>
+												
+												
+												<option value="487" >487</option>
+												
+												
+												<option value="486" >486</option>
+												
+												
+												<option value="485" >485</option>
+												
+												
+												<option value="484" >484</option>
+												
+												
+												<option value="483" >483</option>
+												
+												
+												<option value="482" >482</option>
+												
+												
+												<option value="481" >481</option>
+												
+												
+												<option value="480" >480</option>
+												
+												
+												<option value="479" >479</option>
+												
+												
+												<option value="478" >478</option>
+												
+												
+												<option value="477" >477</option>
+												
+												
+												<option value="476" >476</option>
+												
+												
+												<option value="475" >475</option>
+												
+												
+												<option value="474" >474</option>
+												
+												
+												<option value="473" >473</option>
+												
+												
+												<option value="472" >472</option>
+												
+												
+												<option value="471" >471</option>
+												
+												
+												<option value="470" >470</option>
+												
+												
+												<option value="469" >469</option>
+												
+												
+												<option value="468" >468</option>
+												
+												
+												<option value="467" >467</option>
+												
+												
+												<option value="466" >466</option>
+												
+												
+												<option value="465" >465</option>
+												
+												
+												<option value="464" >464</option>
+												
+												
+												<option value="463" >463</option>
+												
+												
+												<option value="462" >462</option>
+												
+												
+												<option value="461" >461</option>
+												
+												
+												<option value="460" >460</option>
+												
+												
+												<option value="459" >459</option>
+												
+												
+												<option value="458" >458</option>
+												
+												
+												<option value="457" >457</option>
+												
+												
+												<option value="456" >456</option>
+												
+												
+												<option value="455" >455</option>
+												
+												
+												<option value="454" >454</option>
+												
+												
+												<option value="453" >453</option>
+												
+												
+												<option value="452" >452</option>
+												
+												
+												<option value="451" >451</option>
+												
+												
+												<option value="450" >450</option>
+												
+												
+												<option value="449" >449</option>
+												
+												
+												<option value="448" >448</option>
+												
+												
+												<option value="447" >447</option>
+												
+												
+												<option value="446" >446</option>
+												
+												
+												<option value="445" >445</option>
+												
+												
+												<option value="444" >444</option>
+												
+												
+												<option value="443" >443</option>
+												
+												
+												<option value="442" >442</option>
+												
+												
+												<option value="441" >441</option>
+												
+												
+												<option value="440" >440</option>
+												
+												
+												<option value="439" >439</option>
+												
+												
+												<option value="438" >438</option>
+												
+												
+												<option value="437" >437</option>
+												
+												
+												<option value="436" >436</option>
+												
+												
+												<option value="435" >435</option>
+												
+												
+												<option value="434" >434</option>
+												
+												
+												<option value="433" >433</option>
+												
+												
+												<option value="432" >432</option>
+												
+												
+												<option value="431" >431</option>
+												
+												
+												<option value="430" >430</option>
+												
+												
+												<option value="429" >429</option>
+												
+												
+												<option value="428" >428</option>
+												
+												
+												<option value="427" >427</option>
+												
+												
+												<option value="426" >426</option>
+												
+												
+												<option value="425" >425</option>
+												
+												
+												<option value="424" >424</option>
+												
+												
+												<option value="423" >423</option>
+												
+												
+												<option value="422" >422</option>
+												
+												
+												<option value="421" >421</option>
+												
+												
+												<option value="420" >420</option>
+												
+												
+												<option value="419" >419</option>
+												
+												
+												<option value="418" >418</option>
+												
+												
+												<option value="417" >417</option>
+												
+												
+												<option value="416" >416</option>
+												
+												
+												<option value="415" >415</option>
+												
+												
+												<option value="414" >414</option>
+												
+												
+												<option value="413" >413</option>
+												
+												
+												<option value="412" >412</option>
+												
+												
+												<option value="411" >411</option>
+												
+												
+												<option value="410" >410</option>
+												
+												
+												<option value="409" >409</option>
+												
+												
+												<option value="408" >408</option>
+												
+												
+												<option value="407" >407</option>
+												
+												
+												<option value="406" >406</option>
+												
+												
+												<option value="405" >405</option>
+												
+												
+												<option value="404" >404</option>
+												
+												
+												<option value="403" >403</option>
+												
+												
+												<option value="402" >402</option>
+												
+												
+												<option value="401" >401</option>
+												
+												
+												<option value="400" >400</option>
+												
+												
+												<option value="399" >399</option>
+												
+												
+												<option value="398" >398</option>
+												
+												
+												<option value="397" >397</option>
+												
+												
+												<option value="396" >396</option>
+												
+												
+												<option value="395" >395</option>
+												
+												
+												<option value="394" >394</option>
+												
+												
+												<option value="393" >393</option>
+												
+												
+												<option value="392" >392</option>
+												
+												
+												<option value="391" >391</option>
+												
+												
+												<option value="390" >390</option>
+												
+												
+												<option value="389" >389</option>
+												
+												
+												<option value="388" >388</option>
+												
+												
+												<option value="387" >387</option>
+												
+												
+												<option value="386" >386</option>
+												
+												
+												<option value="385" >385</option>
+												
+												
+												<option value="384" >384</option>
+												
+												
+												<option value="383" >383</option>
+												
+												
+												<option value="382" >382</option>
+												
+												
+												<option value="381" >381</option>
+												
+												
+												<option value="380" >380</option>
+												
+												
+												<option value="379" >379</option>
+												
+												
+												<option value="378" >378</option>
+												
+												
+												<option value="377" >377</option>
+												
+												
+												<option value="376" >376</option>
+												
+												
+												<option value="375" >375</option>
+												
+												
+												<option value="374" >374</option>
+												
+												
+												<option value="373" >373</option>
+												
+												
+												<option value="372" >372</option>
+												
+												
+												<option value="371" >371</option>
+												
+												
+												<option value="370" >370</option>
+												
+												
+												<option value="369" >369</option>
+												
+												
+												<option value="368" >368</option>
+												
+												
+												<option value="367" >367</option>
+												
+												
+												<option value="366" >366</option>
+												
+												
+												<option value="365" >365</option>
+												
+												
+												<option value="364" >364</option>
+												
+												
+												<option value="363" >363</option>
+												
+												
+												<option value="362" >362</option>
+												
+												
+												<option value="361" >361</option>
+												
+												
+												<option value="360" >360</option>
+												
+												
+												<option value="359" >359</option>
+												
+												
+												<option value="358" >358</option>
+												
+												
+												<option value="357" >357</option>
+												
+												
+												<option value="356" >356</option>
+												
+												
+												<option value="355" >355</option>
+												
+												
+												<option value="354" >354</option>
+												
+												
+												<option value="353" >353</option>
+												
+												
+												<option value="352" >352</option>
+												
+												
+												<option value="351" >351</option>
+												
+												
+												<option value="350" >350</option>
+												
+												
+												<option value="349" >349</option>
+												
+												
+												<option value="348" >348</option>
+												
+												
+												<option value="347" >347</option>
+												
+												
+												<option value="346" >346</option>
+												
+												
+												<option value="345" >345</option>
+												
+												
+												<option value="344" >344</option>
+												
+												
+												<option value="343" >343</option>
+												
+												
+												<option value="342" >342</option>
+												
+												
+												<option value="341" >341</option>
+												
+												
+												<option value="340" >340</option>
+												
+												
+												<option value="339" >339</option>
+												
+												
+												<option value="338" >338</option>
+												
+												
+												<option value="337" >337</option>
+												
+												
+												<option value="336" >336</option>
+												
+												
+												<option value="335" >335</option>
+												
+												
+												<option value="334" >334</option>
+												
+												
+												<option value="333" >333</option>
+												
+												
+												<option value="332" >332</option>
+												
+												
+												<option value="331" >331</option>
+												
+												
+												<option value="330" >330</option>
+												
+												
+												<option value="329" >329</option>
+												
+												
+												<option value="328" >328</option>
+												
+												
+												<option value="327" >327</option>
+												
+												
+												<option value="326" >326</option>
+												
+												
+												<option value="325" >325</option>
+												
+												
+												<option value="324" >324</option>
+												
+												
+												<option value="323" >323</option>
+												
+												
+												<option value="322" >322</option>
+												
+												
+												<option value="321" >321</option>
+												
+												
+												<option value="320" >320</option>
+												
+												
+												<option value="319" >319</option>
+												
+												
+												<option value="318" >318</option>
+												
+												
+												<option value="317" >317</option>
+												
+												
+												<option value="316" >316</option>
+												
+												
+												<option value="315" >315</option>
+												
+												
+												<option value="314" >314</option>
+												
+												
+												<option value="313" >313</option>
+												
+												
+												<option value="312" >312</option>
+												
+												
+												<option value="311" >311</option>
+												
+												
+												<option value="310" >310</option>
+												
+												
+												<option value="309" >309</option>
+												
+												
+												<option value="308" >308</option>
+												
+												
+												<option value="307" >307</option>
+												
+												
+												<option value="306" >306</option>
+												
+												
+												<option value="305" >305</option>
+												
+												
+												<option value="304" >304</option>
+												
+												
+												<option value="303" >303</option>
+												
+												
+												<option value="302" >302</option>
+												
+												
+												<option value="301" >301</option>
+												
+												
+												<option value="300" >300</option>
+												
+												
+												<option value="299" >299</option>
+												
+												
+												<option value="298" >298</option>
+												
+												
+												<option value="297" >297</option>
+												
+												
+												<option value="296" >296</option>
+												
+												
+												<option value="295" >295</option>
+												
+												
+												<option value="294" >294</option>
+												
+												
+												<option value="293" >293</option>
+												
+												
+												<option value="292" >292</option>
+												
+												
+												<option value="291" >291</option>
+												
+												
+												<option value="290" >290</option>
+												
+												
+												<option value="289" >289</option>
+												
+												
+												<option value="288" >288</option>
+												
+												
+												<option value="287" >287</option>
+												
+												
+												<option value="286" >286</option>
+												
+												
+												<option value="285" >285</option>
+												
+												
+												<option value="284" >284</option>
+												
+												
+												<option value="283" >283</option>
+												
+												
+												<option value="282" >282</option>
+												
+												
+												<option value="281" >281</option>
+												
+												
+												<option value="280" >280</option>
+												
+												
+												<option value="279" >279</option>
+												
+												
+												<option value="278" >278</option>
+												
+												
+												<option value="277" >277</option>
+												
+												
+												<option value="276" >276</option>
+												
+												
+												<option value="275" >275</option>
+												
+												
+												<option value="274" >274</option>
+												
+												
+												<option value="273" >273</option>
+												
+												
+												<option value="272" >272</option>
+												
+												
+												<option value="271" >271</option>
+												
+												
+												<option value="270" >270</option>
+												
+												
+												<option value="269" >269</option>
+												
+												
+												<option value="268" >268</option>
+												
+												
+												<option value="267" >267</option>
+												
+												
+												<option value="266" >266</option>
+												
+												
+												<option value="265" >265</option>
+												
+												
+												<option value="264" >264</option>
+												
+												
+												<option value="263" >263</option>
+												
+												
+												<option value="262" >262</option>
+												
+												
+												<option value="261" >261</option>
+												
+												
+												<option value="260" >260</option>
+												
+												
+												<option value="259" >259</option>
+												
+												
+												<option value="258" >258</option>
+												
+												
+												<option value="257" >257</option>
+												
+												
+												<option value="256" >256</option>
+												
+												
+												<option value="255" >255</option>
+												
+												
+												<option value="254" >254</option>
+												
+												
+												<option value="253" >253</option>
+												
+												
+												<option value="252" >252</option>
+												
+												
+												<option value="251" >251</option>
+												
+												
+												<option value="250" >250</option>
+												
+												
+												<option value="249" >249</option>
+												
+												
+												<option value="248" >248</option>
+												
+												
+												<option value="247" >247</option>
+												
+												
+												<option value="246" >246</option>
+												
+												
+												<option value="245" >245</option>
+												
+												
+												<option value="244" >244</option>
+												
+												
+												<option value="243" >243</option>
+												
+												
+												<option value="242" >242</option>
+												
+												
+												<option value="241" >241</option>
+												
+												
+												<option value="240" >240</option>
+												
+												
+												<option value="239" >239</option>
+												
+												
+												<option value="238" >238</option>
+												
+												
+												<option value="237" >237</option>
+												
+												
+												<option value="236" >236</option>
+												
+												
+												<option value="235" >235</option>
+												
+												
+												<option value="234" >234</option>
+												
+												
+												<option value="233" >233</option>
+												
+												
+												<option value="232" >232</option>
+												
+												
+												<option value="231" >231</option>
+												
+												
+												<option value="230" >230</option>
+												
+												
+												<option value="229" >229</option>
+												
+												
+												<option value="228" >228</option>
+												
+												
+												<option value="227" >227</option>
+												
+												
+												<option value="226" >226</option>
+												
+												
+												<option value="225" >225</option>
+												
+												
+												<option value="224" >224</option>
+												
+												
+												<option value="223" >223</option>
+												
+												
+												<option value="222" >222</option>
+												
+												
+												<option value="221" >221</option>
+												
+												
+												<option value="220" >220</option>
+												
+												
+												<option value="219" >219</option>
+												
+												
+												<option value="218" >218</option>
+												
+												
+												<option value="217" >217</option>
+												
+												
+												<option value="216" >216</option>
+												
+												
+												<option value="215" >215</option>
+												
+												
+												<option value="214" >214</option>
+												
+												
+												<option value="213" >213</option>
+												
+												
+												<option value="212" >212</option>
+												
+												
+												<option value="211" >211</option>
+												
+												
+												<option value="210" >210</option>
+												
+												
+												<option value="209" >209</option>
+												
+												
+												<option value="208" >208</option>
+												
+												
+												<option value="207" >207</option>
+												
+												
+												<option value="206" >206</option>
+												
+												
+												<option value="205" >205</option>
+												
+												
+												<option value="204" >204</option>
+												
+												
+												<option value="203" >203</option>
+												
+												
+												<option value="202" >202</option>
+												
+												
+												<option value="201" >201</option>
+												
+												
+												<option value="200" >200</option>
+												
+												
+												<option value="199" >199</option>
+												
+												
+												<option value="198" >198</option>
+												
+												
+												<option value="197" >197</option>
+												
+												
+												<option value="196" >196</option>
+												
+												
+												<option value="195" >195</option>
+												
+												
+												<option value="194" >194</option>
+												
+												
+												<option value="193" >193</option>
+												
+												
+												<option value="192" >192</option>
+												
+												
+												<option value="191" >191</option>
+												
+												
+												<option value="190" >190</option>
+												
+												
+												<option value="189" >189</option>
+												
+												
+												<option value="188" >188</option>
+												
+												
+												<option value="187" >187</option>
+												
+												
+												<option value="186" >186</option>
+												
+												
+												<option value="185" >185</option>
+												
+												
+												<option value="184" >184</option>
+												
+												
+												<option value="183" >183</option>
+												
+												
+												<option value="182" >182</option>
+												
+												
+												<option value="181" >181</option>
+												
+												
+												<option value="180" >180</option>
+												
+												
+												<option value="179" >179</option>
+												
+												
+												<option value="178" >178</option>
+												
+												
+												<option value="177" >177</option>
+												
+												
+												<option value="176" >176</option>
+												
+												
+												<option value="175" >175</option>
+												
+												
+												<option value="174" >174</option>
+												
+												
+												<option value="173" >173</option>
+												
+												
+												<option value="172" >172</option>
+												
+												
+												<option value="171" >171</option>
+												
+												
+												<option value="170" >170</option>
+												
+												
+												<option value="169" >169</option>
+												
+												
+												<option value="168" >168</option>
+												
+												
+												<option value="167" >167</option>
+												
+												
+												<option value="166" >166</option>
+												
+												
+												<option value="165" >165</option>
+												
+												
+												<option value="164" >164</option>
+												
+												
+												<option value="163" >163</option>
+												
+												
+												<option value="162" >162</option>
+												
+												
+												<option value="161" >161</option>
+												
+												
+												<option value="160" >160</option>
+												
+												
+												<option value="159" >159</option>
+												
+												
+												<option value="158" >158</option>
+												
+												
+												<option value="157" >157</option>
+												
+												
+												<option value="156" >156</option>
+												
+												
+												<option value="155" >155</option>
+												
+												
+												<option value="154" >154</option>
+												
+												
+												<option value="153" >153</option>
+												
+												
+												<option value="152" >152</option>
+												
+												
+												<option value="151" >151</option>
+												
+												
+												<option value="150" >150</option>
+												
+												
+												<option value="149" >149</option>
+												
+												
+												<option value="148" >148</option>
+												
+												
+												<option value="147" >147</option>
+												
+												
+												<option value="146" >146</option>
+												
+												
+												<option value="145" >145</option>
+												
+												
+												<option value="144" >144</option>
+												
+												
+												<option value="143" >143</option>
+												
+												
+												<option value="142" >142</option>
+												
+												
+												<option value="141" >141</option>
+												
+												
+												<option value="140" >140</option>
+												
+												
+												<option value="139" >139</option>
+												
+												
+												<option value="138" >138</option>
+												
+												
+												<option value="137" >137</option>
+												
+												
+												<option value="136" >136</option>
+												
+												
+												<option value="135" >135</option>
+												
+												
+												<option value="134" >134</option>
+												
+												
+												<option value="133" >133</option>
+												
+												
+												<option value="132" >132</option>
+												
+												
+												<option value="131" >131</option>
+												
+												
+												<option value="130" >130</option>
+												
+												
+												<option value="129" >129</option>
+												
+												
+												<option value="128" >128</option>
+												
+												
+												<option value="127" >127</option>
+												
+												
+												<option value="126" >126</option>
+												
+												
+												<option value="125" >125</option>
+												
+												
+												<option value="124" >124</option>
+												
+												
+												<option value="123" >123</option>
+												
+												
+												<option value="122" >122</option>
+												
+												
+												<option value="121" >121</option>
+												
+												
+												<option value="120" >120</option>
+												
+												
+												<option value="119" >119</option>
+												
+												
+												<option value="118" >118</option>
+												
+												
+												<option value="117" >117</option>
+												
+												
+												<option value="116" >116</option>
+												
+												
+												<option value="115" >115</option>
+												
+												
+												<option value="114" >114</option>
+												
+												
+												<option value="113" >113</option>
+												
+												
+												<option value="112" >112</option>
+												
+												
+												<option value="111" >111</option>
+												
+												
+												<option value="110" >110</option>
+												
+												
+												<option value="109" >109</option>
+												
+												
+												<option value="108" >108</option>
+												
+												
+												<option value="107" >107</option>
+												
+												
+												<option value="106" >106</option>
+												
+												
+												<option value="105" >105</option>
+												
+												
+												<option value="104" >104</option>
+												
+												
+												<option value="103" >103</option>
+												
+												
+												<option value="102" >102</option>
+												
+												
+												<option value="101" >101</option>
+												
+												
+												<option value="100" >100</option>
+												
+												
+												<option value="99" >99</option>
+												
+												
+												<option value="98" >98</option>
+												
+												
+												<option value="97" >97</option>
+												
+												
+												<option value="96" >96</option>
+												
+												
+												<option value="95" >95</option>
+												
+												
+												<option value="94" >94</option>
+												
+												
+												<option value="93" >93</option>
+												
+												
+												<option value="92" >92</option>
+												
+												
+												<option value="91" >91</option>
+												
+												
+												<option value="90" >90</option>
+												
+												
+												<option value="89" >89</option>
+												
+												
+												<option value="88" >88</option>
+												
+												
+												<option value="87" >87</option>
+												
+												
+												<option value="86" >86</option>
+												
+												
+												<option value="85" >85</option>
+												
+												
+												<option value="84" >84</option>
+												
+												
+												<option value="83" >83</option>
+												
+												
+												<option value="82" >82</option>
+												
+												
+												<option value="81" >81</option>
+												
+												
+												<option value="80" >80</option>
+												
+												
+												<option value="79" >79</option>
+												
+												
+												<option value="78" >78</option>
+												
+												
+												<option value="77" >77</option>
+												
+												
+												<option value="76" >76</option>
+												
+												
+												<option value="75" >75</option>
+												
+												
+												<option value="74" >74</option>
+												
+												
+												<option value="73" >73</option>
+												
+												
+												<option value="72" >72</option>
+												
+												
+												<option value="71" >71</option>
+												
+												
+												<option value="70" >70</option>
+												
+												
+												<option value="69" >69</option>
+												
+												
+												<option value="68" >68</option>
+												
+												
+												<option value="67" >67</option>
+												
+												
+												<option value="66" >66</option>
+												
+												
+												<option value="65" >65</option>
+												
+												
+												<option value="64" >64</option>
+												
+												
+												<option value="63" >63</option>
+												
+												
+												<option value="62" >62</option>
+												
+												
+												<option value="61" >61</option>
+												
+												
+												<option value="60" >60</option>
+												
+												
+												<option value="59" >59</option>
+												
+												
+												<option value="58" >58</option>
+												
+												
+												<option value="57" >57</option>
+												
+												
+												<option value="56" >56</option>
+												
+												
+												<option value="55" >55</option>
+												
+												
+												<option value="54" >54</option>
+												
+												
+												<option value="53" >53</option>
+												
+												
+												<option value="52" >52</option>
+												
+												
+												<option value="51" >51</option>
+												
+												
+												<option value="50" >50</option>
+												
+												
+												<option value="49" >49</option>
+												
+												
+												<option value="48" >48</option>
+												
+												
+												<option value="47" >47</option>
+												
+												
+												<option value="46" >46</option>
+												
+												
+												<option value="45" >45</option>
+												
+												
+												<option value="44" >44</option>
+												
+												
+												<option value="43" >43</option>
+												
+												
+												<option value="42" >42</option>
+												
+												
+												<option value="41" >41</option>
+												
+												
+												<option value="40" >40</option>
+												
+												
+												<option value="39" >39</option>
+												
+												
+												<option value="38" >38</option>
+												
+												
+												<option value="37" >37</option>
+												
+												
+												<option value="36" >36</option>
+												
+												
+												<option value="35" >35</option>
+												
+												
+												<option value="34" >34</option>
+												
+												
+												<option value="33" >33</option>
+												
+												
+												<option value="32" >32</option>
+												
+												
+												<option value="31" >31</option>
+												
+												
+												<option value="30" >30</option>
+												
+												
+												<option value="29" >29</option>
+												
+												
+												<option value="28" >28</option>
+												
+												
+												<option value="27" >27</option>
+												
+												
+												<option value="26" >26</option>
+												
+												
+												<option value="25" >25</option>
+												
+												
+												<option value="24" >24</option>
+												
+												
+												<option value="23" >23</option>
+												
+												
+												<option value="22" >22</option>
+												
+												
+												<option value="21" >21</option>
+												
+												
+												<option value="20" >20</option>
+												
+												
+												<option value="19" >19</option>
+												
+												
+												<option value="18" >18</option>
+												
+												
+												<option value="17" >17</option>
+												
+												
+												<option value="16" >16</option>
+												
+												
+												<option value="15" >15</option>
+												
+												
+												<option value="14" >14</option>
+												
+												
+												<option value="13" >13</option>
+												
+												
+												<option value="12" >12</option>
+												
+												
+												<option value="11" >11</option>
+												
+												
+												<option value="10" >10</option>
+												
+												
+												<option value="9" >9</option>
+												
+												
+												<option value="8" >8</option>
+												
+												
+												<option value="7" >7</option>
+												
+												
+												<option value="6" >6</option>
+												
+												
+												<option value="5" >5</option>
+												
+												
+												<option value="4" >4</option>
+												
+												
+												<option value="3" >3</option>
+												
+												
+												<option value="2" >2</option>
+												
+												
+												<option value="1" selected>1</option>
+												
+												
+											
+											
+										
+										</select>
+                                    </td>
+                               	</tr>
+                               	<tr>
+                                    <th scope="row">판매점</th>
+                                    <td>
+                                        <select name="schKey" id="schKey" title="조회옵션 선택">
+                                        	<option value="all" SELECTED="SELECTED">전체</option>
+		                                    <option value="area" >지역</option>
+		                                    <option value="offi" >상호</option>
+                                        </select>
+                                        <input type="text"name="schVal" id="schVal" title="검색어 입력" value="">
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </form>
+					<div class="btns_submit search">
+						<a class="btn_common mid blu" id="searchBtn" href="#">조회</a>
+					</div>  
+
+					<div class="group_content">
+						<div class="group_title">
+						    <h4 class="title">1등 배출점</h4>
+						</div>
+						<table class="tbl_data tbl_data_col">
+							<caption>상호, 번호선택구분, 소재지, 위치 등 선택 회차의 로또 6/45 1등 배출점을 안내합니다.</caption>
+							<colgroup>
+								<col style="width:60px">
+								<col>
+								<col style="width:80px">
+								<col style="width:445px">
+								<col style="width:90px">
+							</colgroup>
+							<thead>
+								<tr>
+									<th scope="col">번호</th>
+								 	<th scope="col">상호명</th>
+								 	<th scope="col">구분</th>
+								 	<th scope="col">소재지</th>
+								 	<th scope="col">위치보기</th>
+								</tr>
+							</thead>				
+							<tbody>
+								
+								
+								
+									<tr>
+										<td class="nodata" colspan="5">조회 결과가 없습니다.</td>
+									</tr>
+								
+							</tbody>
+						</table>
+					</div>
+					<div class="group_content">
+						<div class="group_title">
+						    <h4 class="title">2등 배출점</h4>
+						</div>
+						<table class="tbl_data tbl_data_col">
+							<caption>상호, 번호선택구분, 소재지, 위치 등 선택 회차의 로또 6/45 2등 배출점을 안내합니다.</caption>
+							<colgroup>
+								<col style="width:60px">
+								<col>
+								<col style="width:445px">
+								<col style="width:90px">
+							</colgroup>
+							<thead>
+								<tr>
+									<th scope="col">번호</th>
+								 	<th scope="col">상호명</th>
+								 	<th scope="col">소재지</th>
+								 	<th scope="col">위치보기</th>
+								</tr>
+							</thead>
+							<tbody>
+								
+								
+								
+									<tr>
+										<td class="nodata" colspan="4">조회 결과가 없습니다.</td>
+									</tr>
+								
+							</tbody>
+						</table>
+						
+					</div>    
+			</div>
+  		</div>
+	</div>
+    	
+ 
+	<aside id="asideQuick" class="quic_aside">
+		<a href="#" class="toggle">퀵메뉴열기</a>
+		<div class="inner">
+			<ul class="prog">
+				<li class="p0"><a href="/gameResult.do?method=notReceiveInfo">미수령<br>당첨금</a></li>
+				<li class="p1"><a href="/myPage.do?method=enjoyEval">나의복권<br>건전지수</a></li>
+				<li class="p2"><a href="/happy.do?method=healthCultureProc">건전구매<br>캠페인</a></li>
+				<li class="p3"><a href="/user.do?method=campainVow">건전구매<br>서약</a></li>
+				<li class="p4"><a href="/myPage.do?method=campainTest">자기관리<br>프로그램</a></li>
+				<li class="p5"><a href="https://clean.dhlottery.co.kr/" target="_blank" title="새창 열림">동행<br>클린센터</a></li>
+				<!-- RFC_20250314_0002 | [포털] 퀵메뉴 링크 및 아이콘 수정 요청 | 2025.03.14 | 김지훈 -->
+				<!-- <li class="p7"><a href="/user.do?method=intJoinSms" ></a></li> --><!--신규판매인 모집 알림-->
+				<!-- <li class="p8"><a href="/service.do?method=noticeView&noticeSerial=309" ></a></li>신규판매인 모집공고 -->
+				<!-- <li class="p9"><a href="https://sales.dhlottery.co.kr" ></a></li>신규판매인 모집접수 -->
+				<li class="p10"><a href="http://www.bokgwon.go.kr/post/postView.do?boardSeq=5&category=&pageNum=1&seq=10018" target="_blank">복권기금<br>공모전</a></li>
+				
+			</ul>
+		</div>
+		<div class="top"><a href="#skipnavigation">위로가기</a></div>
+	</aside>
+	<script type="text/javascript">
+		$(document).ready(function(){
+			var spread;
+			var min4quick = 1420;
+			var bodyw = $("body").prop("clientWidth");
+			var aside = $("#asideQuick");
+			var btn = aside.find(".toggle");
+			$(window).resize(function(){
+				bodyw = $("body").prop("clientWidth");
+				if(bodyw < min4quick){
+					aside.css("right","-86px");
+					aside.addClass("fold");
+					spread = false;
+				}else{
+					aside.css("right","0");
+					aside.removeClass("fold");
+					spread = true;
+				}
+			}).resize();
+			btn.click(function(e){
+				e.preventDefault();
+				if(spread == true){
+					aside.animate({right:-86},300);
+					btn.removeClass("opened");					
+					spread = false;
+				}else{
+					aside.animate({right:0},300);
+					btn.addClass("opened");
+					spread = true;
+				}
+				
+			});
+		});
+	</script>
+
+</section>
+
+	
+
+	
+	
+		
+
+<!--모달팝업레이어 추가-->
+<div class="layer">  
+	<div class="bg"></div>  
+	<div class="layer_area" id="layer1">
+    	<div class="layer_top">아래 QR 코드를 휴대폰으로 촬영해주세요.<br>케이뱅크 계좌 개설 페이지로 이동합니다.</div>
+		<div class="layer_img"><img src="images/event/kbank_2025.png"></div>
+		<div class="layer_btn"><a href="#" id="layer_close">닫기</a></div>
+	</div>  
+</div>
+  
+<script type="text/javascript">  
+jQuery(function($){  
+	function layer_open(el){  		
+		$('.layer').fadeIn();
+		var temp = $('#' + el);  
+		if (temp.outerHeight() < $(document).height() ) temp.css('margin-top', '-'+temp.outerHeight()/2+'px');  
+		else temp.css('top', '0px');
+		if (temp.outerWidth() < $(document).width() ) temp.css('margin-left', '-'+temp.outerWidth()/2+'px');  
+		else temp.css('left', '0px');
+	}
+
+	$('#layer_open').click(function(){  
+		layer_open('layer1');  
+		return false;  
+	});  
+	
+	$('#layer_close').click(function(){  
+		$('.layer').fadeOut();  
+		return false;  
+	});
+});  
+</script>
+<!--//모달팝업레이어 추가-->
+
+</div><!-- //pc일 경우 컨텐츠 영역 감싸는 마크업 추가  -->
+
+<!-- 접속대기 레이어 -->
+<div id="popWaitConnect" class="wrap_pop_layer" style="display:none">
+	<div class="popup_layer popup_waiting">
+		<div class="header_layer">
+			<h2>접속대기 안내</h2>
+			<a class="close" href="#">닫기</a>
+		</div>
+		<div class="status">
+			<p class="m1"><strong>서비스연결 대기중</strong>입니다. <span>대기 순서에 따라 자동 접속됩니다.</span></p>
+			<div class="circle"><span>접속 대기중</span></div>
+			<p class="m2">현재 대기 인원 : <strong id="popWaitCount">총 1,200명</strong><br>예상 대기 시간 : <strong id="popWaitTime">약 5분 30초</strong></p>
+		</div>
+		<div class="noti">
+			<h3>유의사항</h3>
+			<ul class="list_text_common">
+				<li>새로고침 또는 뒤로가기를 하면 다시 대기시간이 부여됩니다.</li>
+			</ul>
+		</div>
+		<div class="btns_bottom">
+		    <a class="btn_common mid close" href="#">대기종료</a>
+		</div>
+	</div>
+</div>
+<!-- //접속대기 레이어 -->
+
+<footer id="footer" class="footer">
+	<!-- <div class="footer_container">
+		<div class="footer_wrap"> -->
+			<h3 class="hide">하단메뉴</h3>
+			<ul class="foot_menu">
+	            <li class="fisrt"><a id="eeeee" href="/clause.do?method=footerUseClause">이용약관</a></li>
+	            <li><strong><a href="/clause.do?method=footerPrivate">개인정보 처리방침</a></strong></li>
+	            <li><strong><a href="javascript:popup_payment_2();"  onclick="javascript:goWiseLogMain('');">인쇄복권당첨금지급기준</a></strong></li>
+ 	        
+	            <li><a href="/clause.do?method=reportCenterList">불법사행행위신고센터</a></li>
+	            <li><a href="/company.do?method=footerInfo">수탁사업자소개</a></li>
+	            <li><a href="javascript:popupEngPage();" onclick="javascript:goWiseLogMain('');">ENGLISH</a></li>
+	        
+	        
+	        </ul>
+			<div class="foot_inner">
+                <div class="foot_txt_wrap">
+					<div class="logo"><div class="inner">
+						<strong class="dh">동행복권</strong>
+						<a href="javascript:goFacPop()" class="btn_foot" title="새창 열림">사업자정보확인</a>
+					</div></div>
+			        <div class="foot_txt1">
+			        	<p>수탁사업자 (주)동행복권 <span class="ml15">주소 : 06719 서울 서초구 남부순환로 2423 한원빌딩 4층</span> <span class="ml15">고객문의 1588-6450</span> <span class="ml15">FAX 02-6933-3063</span></p>
+			        	<p>대표자 : 홍덕기  <span class="ml15">사업자등록번호 866-87-00833</span> <span class="ml15">통신판매사업자번호 : 제2018 - 서울서초 - 2075호</span> <!-- <span class="ml15"><a href="javascript:goFacPop()" class="btn_foot">사업자정보확인 &gt;</a></span> --></p>
+			        </div>
+			        <div class="foot_txt1">			        	
+			        	<br><p>본 홈페이지는 게시된 이메일 주소가 자동 수집되는 것을 거부하며, 이를 위반시 정보통신망법에 의해 처벌됨을 유념하여 주시길 바랍니다.</p>
+			        	<p>19세 미만일 경우 「복권 및 복권기금법」에 따라 복권을 구매할 수 없습니다.</p>
+			        </div>
+			        <div class="foot_txt2">
+			        	<p>본 사이트는 Internet Explorer 11, Edge, Chrome, Safari 브라우저에 최적화되어 있습니다.</p>
+			        </div>
+			        <div class="foot_txt2">	
+			           <p>Copyright (c) 2018 복권위원회&amp;동행복권. All rights reserved</p>
+			        </div>		        
+				</div>
+					
+                    <div class="group_inner">
+                        <div class="foot_txt_wrap">
+                            <div class="foot_integrated">
+                                <div style="text-align:left;">
+                                    <img src="/images/layout/certified_mark1.png"  alt="certified_mark1">
+                                </div>                                
+                            </div>
+                        </div>
+                    </div>
+                </div>
+				
+		        
+	        
+		<!-- </div>
+	</div> -->
+</footer>
+<!-- //footer -->
+
+<script type="text/javascript">
+	//$$js_import$$("pohe_kr.m.theme.Collapsible", null, "phone");
+	
+	function goFacPop(){
+		window.open('http://www.ftc.go.kr/info/bizinfo/communicationViewPopup.jsp?wrkr_no=8668700833', 'fac' , 'width=730, height=658, left=0, top=0, status=no, toolbar=no, menubar=no, location=no');
+	}
+	
+	function popup_payment_2(){
+		var url = "/jspcall.do?method=call&url=gameResult/paymentStandard720";	
+		commonPop("", url, 817, 750, 'yes');
+	}
+	
+	function popupEngPage(){
+		window.open('/en/html/Introduction.html', 'engPage' , 'width=1277, height=960, left=0, top=0, status=yes, resizable=yes, scrollbars=yes, toolbar=no, menubar=no, location=no');
+	}
+	
+	function popupSalesPage(pageUseYn) {
+		if (pageUseYn == "Y") {
+			var strUrl = "https://sales.dhlottery.co.kr/";
+			var strOption = "width=1280, height=960, top=0, left=0, location=yes, menubar=yes, resizable=yes, scrollbars=yes, status=yes, toolbar=yes";
+			var new_popup = window.open(strUrl, 'salesPage', strOption);			
+		} else {
+			alert("신청기간이 아닙니다.");
+		}
+	}
+	
+	function popup_inform(){
+		var url = "/jspcall.do?method=call&url=gameResult/printLottoSalesInform";	
+		commonPop("", url, 817, 750, 'yes');
+	}	
+</script>
+<script>
+$(document).ready(function(){
+	var valueDefault = $(".topLogin .top_userid").prop('value');  
+	
+	if (valueDefault == '' ) {
+		$(".topLogin .label_id").show();
+	} else {
+		$(".topLogin .label_id").hide();
+	}
+	$(".topLogin label").click(function(){
+		$(this).next().focus();
+	});
+	$(".topLogin input").focus(function(){
+		$(this).prev().hide();
+	});
+	$(".topLogin input").focusout(function(){
+		var value = $(this).prop('value');  
+		
+		if (value == '' ) {
+			$(this).prev().show();
+		} else {
+			return false;
+		}
+	});
+	
+});
+</script>
+	
+
+    
+
+</body>
+</html>

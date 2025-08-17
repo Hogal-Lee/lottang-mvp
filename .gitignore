@@ -1,0 +1,23 @@
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+env/
+venv/
+
+# Data
+data/*.csv
+data/*.json
+data/*.parquet
+
+# Secrets
+.env
+
+# Node
+node_modules/
+dist/
+build/
+
+# Misc
+.DS_Store

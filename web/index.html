@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>로땅 - 로또 명당 지도</title>
+
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- Kakao Maps SDK (autoload=false 필수) -->
+  <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=ca26f9ae7a3d87a3526307104203c1a0&libraries=services,clusterer&autoload=false"></script>
+</head>
+<body>
+  <!-- 상단 헤더 -->
+  <header class="topbar">
+    <div class="title">로땅</div>
+    <div class="subtitle">로또 명당 지도</div>
+  </header>
+
+  <!-- 필터 바 -->
+  <div id="filterbar">
+    <label><input type="checkbox" id="f-only1"> 1등만</label>
+    <label><input type="checkbox" id="f-recent"> 최근 1년</label>
+
+    <label style="margin-left:8px;">최소 점수
+      <select id="f-minscore">
+        <option value="0">0</option>
+        <option value="20">20</option>
+        <option value="50">50</option>
+        <option value="80">80</option>
+      </select>
+    </label>
+
+    <label style="margin-left:8px;">반경
+      <select id="f-radius">
+        <option value="0">전체</option>
+        <option value="0.5">0.5km</option>
+        <option value="1">1km</option>
+        <option value="2">2km</option>
+        <option value="3">3km</option>
+        <option value="5">5km</option>
+      </select>
+    </label>
+
+    <input id="f-q" type="search" placeholder="가게명/주소 검색" />
+    <button id="btn-apply">적용</button>
+    <button id="btn-reset">초기화</button>
+    <button id="loc-btn">내 위치</button>
+
+    <!-- 범례 -->
+    <div id="legend">
+      <span class="chip chip-red"></span><em>점수 ≥ 50</em>
+      <span class="chip chip-orange"></span><em>20 ~ 49</em>
+      <span class="chip chip-gray"></span><em>&lt; 20</em>
+    </div>
+
+    <!-- 카운트/공유 -->
+    <div id="sharebox">
+      <span id="count-label">0건</span>
+      <button id="btn-share" title="현재 화면 링크 복사">공유</button>
+    </div>
+  </div>
+
+  <!-- 지도 -->
+  <div id="map"></div>
+
+  <!-- 하단 상세 시트 (업그레이드) -->
+  <div id="bottom-sheet" class="sheet hidden" role="dialog" aria-label="상세 정보">
+    <div class="handle"></div>
+
+    <div class="row">
+      <div class="label">가게명</div>
+      <div class="value" id="s-name">-</div>
+    </div>
+
+    <div class="row">
+      <div class="label">주소</div>
+      <div class="value" id="s-addr">-</div>
+    </div>
+
+    <div class="row">
+      <div class="label">당첨</div>
+      <div class="value">
+        <span class="pill" id="s-win1">1등 0</span>
+        <span class="pill" id="s-win2">2등 0</span>
+        <span class="muted" id="s-score">(점수 -)</span>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="label">최근 당첨</div>
+      <div class="value">
+        <span id="s-recent-date">-</span>
+        <span class="muted" id="s-recent-note"></span>
+      </div>
+    </div>
+
+    <div class="actions">
+      <a id="nav-link" class="btn" href="#" target="_blank" rel="noopener">카카오맵 길찾기</a>
+      <button id="btn-close" class="btn ghost">닫기</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
