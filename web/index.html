@@ -2,121 +2,78 @@
 <html lang="ko">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>로땅 - 로또 명당 지도</title>
+  <!-- ✅ 모바일 뷰포트 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>로땅</title>
 
-  <link rel="stylesheet" href="style.css" />
-  <script src="env.js">
-  </script>
-  <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=ca26f9ae7a3d87a3526307104203c1a0&libraries=services,clusterer&autoload=false">
-  </script>
-
-  <!-- Kakao Maps SDK (autoload=false 필수) -->
-  <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=ca26f9ae7a3d87a3526307104203c1a0&libraries=services,clusterer&autoload=false">
-  </script>
-
-  <!-- Favicons & PWA -->
+  <!-- 파비콘/manifest 그대로 유지 -->
   <link rel="icon" href="favicon.ico" />
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png?v=1" />
   <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png?v=1" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png?v=1" />
-  <link rel="manifest" href="site.webmanifest?v=1">
-  <meta name="theme-color" content="#111111">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <link rel="manifest" href="site.webmanifest?v=1" />
+  <meta name="theme-color" content="#111111" />
 
+  <link rel="stylesheet" href="style.css?v=1" />
+  <script src="env.js"></script>
+  <script defer src="app.js?v=1"></script>
+  <!-- Kakao SDK는 app.js에서 동적으로 로드됩니다 -->
 </head>
 <body>
-  <!-- 상단 헤더 -->
+  <!-- 헤더 -->
   <header class="topbar">
-    <div class="title">로땅</div>
-    <div class="subtitle">로또 명당 지도</div>
+    <h1>로땅</h1>
   </header>
 
-  <!-- 필터 바 -->
-  <div id="filterbar">
-    <label><input type="checkbox" id="f-only1"> 1등만</label>
-    <label><input type="checkbox" id="f-recent"> 최근 1년</label>
-
-    <label style="margin-left:8px;">최소 점수
-      <select id="f-minscore">
-        <option value="0">0</option>
-        <option value="20">20</option>
-        <option value="50">50</option>
-        <option value="80">80</option>
+  <!-- 툴바: 필터/검색 -->
+  <section class="toolbar" id="toolbar">
+    <label><input type="checkbox" id="onlyFirst" /> 1등만</label>
+    <label><input type="checkbox" id="recent1y" /> 최근 1년</label>
+    <label>최소 점수
+      <select id="minScore">
+        <option value="0">0</option><option value="10">10</option>
+        <option value="20">20</option><option value="30">30</option>
+        <option value="40">40</option><option value="50">50</option>
       </select>
     </label>
-
-    <label style="margin-left:8px;">반경
-      <select id="f-radius">
-        <option value="0">전체</option>
-        <option value="0.5">0.5km</option>
-        <option value="1">1km</option>
-        <option value="2">2km</option>
-        <option value="3">3km</option>
-        <option value="5">5km</option>
+    <label>반경
+      <select id="radiusKm">
+        <option value="0">전국</option><option value="1">1km</option>
+        <option value="3">3km</option><option value="5">5km</option>
       </select>
     </label>
+    <input id="q" placeholder="가게/주소 검색" />
+    <button id="apply">적용</button>
+    <button id="reset">초기화</button>
+    <button id="locate">내 위치</button>
+  </section>
 
-    <input id="f-q" type="search" placeholder="가게명/주소 검색" />
-    <button id="btn-apply">적용</button>
-    <button id="btn-reset">초기화</button>
-    <button id="loc-btn">내 위치</button>
-
-    <!-- 범례 -->
-    <div id="legend">
-      <span class="chip chip-red"></span><em>점수 ≥ 50</em>
-      <span class="chip chip-orange"></span><em>20 ~ 49</em>
-      <span class="chip chip-gray"></span><em>&lt; 20</em>
-    </div>
-
-    <!-- 카운트/공유 -->
-    <div id="sharebox">
-      <span id="count-label">0건</span>
-      <button id="btn-share" title="현재 화면 링크 복사">공유</button>
-    </div>
-  </div>
+  <!-- 범례(모바일에선 자동 줄바꿈) -->
+  <section class="legend">
+    <span class="dot dot-red"></span> 상(≥50)
+    <span class="dot dot-orange"></span> 중(20–49)
+    <span class="dot dot-gray"></span> 일반(<20)
+    <span class="count"><span id="count">0</span></span>
+  </section>
 
   <!-- 지도 -->
-  <div id="map"></div>
+  <main id="map"></main>
 
-  <!-- 하단 상세 시트 (업그레이드) -->
-  <div id="bottom-sheet" class="sheet hidden" role="dialog" aria-label="상세 정보">
-    <div class="handle"></div>
-
-    <div class="row">
-      <div class="label">가게명</div>
-      <div class="value" id="s-name">-</div>
-    </div>
-
-    <div class="row">
-      <div class="label">주소</div>
-      <div class="value" id="s-addr">-</div>
-    </div>
-
-    <div class="row">
-      <div class="label">당첨</div>
-      <div class="value">
-        <span class="pill" id="s-win1">1등 0</span>
-        <span class="pill" id="s-win2">2등 0</span>
-        <span class="muted" id="s-score">(점수 -)</span>
+  <!-- ✅ 바텀시트(상세) : 모바일 최적화 -->
+  <aside id="sheet" class="sheet">
+    <div class="sheet-handle" id="sheetHandle"></div>
+    <div class="sheet-body">
+      <h2 id="d_name">가게 이름</h2>
+      <div class="meta">
+        <div>주소: <span id="d_addr"></span></div>
+        <div>당첨: <span id="d_win"></span></div>
+        <div>최근: <span id="d_recent"></span></div>
+      </div>
+      <div class="actions">
+        <button id="btnCopy">주소 복사</button>
+        <a id="btnNavi" target="_blank" rel="noopener">길찾기</a>
       </div>
     </div>
-
-    <div class="row">
-      <div class="label">최근 당첨</div>
-      <div class="value">
-        <span id="s-recent-date">-</span>
-        <span class="muted" id="s-recent-note"></span>
-      </div>
-    </div>
-
-    <div class="actions">
-      <a id="nav-link" class="btn" href="#" target="_blank" rel="noopener">카카오맵 길찾기</a>
-      <button id="btn-close" class="btn ghost">닫기</button>
-    </div>
-  </div>
-
-  <script src="app.js"></script>
+  </aside>
 </body>
 </html>

@@ -1,65 +1,74 @@
-html, body {
-  height: 100%;
-  margin: 0;
-  font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Noto Sans KR',sans-serif;
+:root{
+  --header-h:56px;
+  --toolbar-h:48px;
+  --legend-h:32px;
+  --bg:#111; --fg:#fff;
 }
+
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Apple SD Gothic Neo,Malgun Gothic,sans-serif;background:#f6f7f9;color:#222}
 
 /* 헤더 */
-.topbar {
-  position: fixed; top:0; left:0; right:0; height:56px;
-  background:#111; color:#fff; display:flex; flex-direction:column;
-  align-items:center; justify-content:center; z-index:10;
+.topbar{
+  position:sticky;top:0;z-index:30;
+  height:var(--header-h);display:flex;align-items:center;justify-content:center;
+  background:var(--bg);color:var(--fg);border-bottom:1px solid #000;
 }
-.topbar .title { font-size:22px; font-weight:800; letter-spacing:2px; }
-.topbar .subtitle { font-size:12px; opacity:.7; }
+.topbar h1{font-size:18px;margin:0}
 
-/* 필터 바 */
-#filterbar {
-  display:flex; flex-wrap:wrap; gap:8px; align-items:center;
-  padding:8px; background:#f7f7f7; border-bottom:1px solid #e9e9e9;
-  position:sticky; top:56px; z-index:9;
+/* 툴바: 가로 스크롤 */
+.toolbar{
+  position:sticky;top:var(--header-h);z-index:25;
+  display:flex;gap:8px;align-items:center;
+  overflow-x:auto;white-space:nowrap;
+  padding:6px 10px;background:#fff;border-bottom:1px solid #e5e7eb;
 }
-#filterbar input[type="search"] { padding:6px 8px; width:220px; }
-#filterbar button, #filterbar select { padding:6px 10px; }
+.toolbar input[type="text"], .toolbar input[type="search"], .toolbar #q{
+  height:32px;padding:0 8px;border:1px solid #e5e7eb;border-radius:6px;min-width:160px
+}
+.toolbar button, .toolbar select{
+  height:32px;padding:0 10px;border:1px solid #e5e7eb;border-radius:6px;background:#fff
+}
 
 /* 범례 */
-#legend { margin-left:auto; display:flex; gap:10px; align-items:center; }
-#legend .chip { display:inline-block; width:14px; height:14px; border-radius:7px; border:2px solid #fff; box-shadow:0 0 0 1px rgba(0,0,0,.2); margin-right:4px; }
-#legend em { font-style:normal; font-size:12px; color:#444; }
-.chip-red    { background:#e53935; }
-.chip-orange { background:#fb8c00; }
-.chip-gray   { background:#9e9e9e; }
-
-/* 카운트/공유 */
-#sharebox { display:flex; gap:8px; align-items:center; margin-left:10px; }
-#count-label { font-size:12px; color:#333; padding:2px 6px; background:#fff; border-radius:6px; border:1px solid #e0e0e0; }
-
-/* 지도 */
-#map { height: calc(100vh - 56px - 48px); min-height: 420px; }
-
-/* 상세 시트 */
-.sheet {
-  position: fixed; left:0; right:0; bottom:0; background:#fff;
-  border-radius:16px 16px 0 0; box-shadow:0 -8px 24px rgba(0,0,0,.12);
-  padding:12px 16px 18px; z-index:20;
+.legend{
+  position:sticky;top:calc(var(--header-h) + var(--toolbar-h));
+  z-index:20;background:#fff;border-bottom:1px solid #e5e7eb;
+  height:var(--legend-h);display:flex;align-items:center;gap:14px;padding:0 10px
 }
-.sheet.hidden { display:none; }
-.sheet .handle { width:40px; height:4px; background:#ddd; border-radius:2px; margin:8px auto 12px; }
+.legend .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:middle}
+.dot-red{background:#ff4d4f}.dot-orange{background:#f59e0b}.dot-gray{background:#9ca3af}
+.legend .count{margin-left:auto;color:#6b7280}
 
-.sheet .row { display:flex; gap:12px; margin:8px 0; }
-.sheet .row .label { width:72px; color:#666; font-size:13px; flex:0 0 72px; }
-.sheet .row .value { flex:1; color:#111; }
-
-.badge, .pill {
-  display:inline-block; padding:4px 8px; border-radius:999px; font-size:12px; line-height:1;
-  border:1px solid #e0e0e0; background:#fafafa; margin-right:6px;
+/* 지도 영역: 모바일에서 100dvh(주소창 포함 높이 대응) */
+#map{
+  position:relative;z-index:10;
+  height:calc(100dvh - var(--header-h) - var(--toolbar-h) - var(--legend-h));
 }
-.badge { background:#111; color:#fff; border:0; }
-.muted { color:#666; font-size:12px; margin-left:6px; }
 
-.actions { display:flex; gap:8px; margin-top:10px; }
-.btn {
-  padding:8px 12px; border-radius:8px; border:1px solid #111; color:#111; background:#fff; cursor:pointer;
+/* 바텀시트 */
+.sheet{
+  position:fixed;left:0;right:0;bottom:-60%;
+  background:#fff;border-top-left-radius:14px;border-top-right-radius:14px;
+  box-shadow:0 -10px 30px rgba(0,0,0,.12);
+  transition:bottom .25s ease;z-index:40;
+  max-height:75dvh;display:flex;flex-direction:column
 }
-.btn.ghost { border-color:#e0e0e0; color:#444; }
-.btn:hover { background:#111; color:#fff; }
+.sheet.open{bottom:0}
+.sheet-handle{
+  width:48px;height:6px;border-radius:3px;background:#d1d5db;margin:8px auto
+}
+.sheet-body{padding:10px 16px;overflow:auto}
+.sheet-body h2{margin:6px 0 10px;font-size:18px}
+.sheet-body .meta{color:#6b7280;display:grid;gap:6px}
+.sheet-body .actions{display:flex;gap:8px;margin-top:12px}
+.sheet-body .actions button,.sheet-body .actions a{
+  height:36px;padding:0 12px;border:1px solid #e5e7eb;border-radius:8px;background:#fff;text-decoration:none;color:#111
+}
+
+/* 데스크탑에서 시트는 오른쪽 패널처럼 */
+@media (min-width: 960px){
+  .sheet{left:auto;width:360px;right:16px;bottom:16px;border-radius:12px}
+  .sheet.open{bottom:16px}
+}
