@@ -1,0 +1,89 @@
+name: Lottang Bootstrap Full (one-off)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      KAKAO_REST_API_KEY: ${{ secrets.KAKAO_REST_API_KEY }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install deps
+        run: |
+          pip install -r requirements.txt || pip install requests beautifulsoup4 pandas python-dateutil tqdm
+
+      - name: Find latest draw
+        id: latest
+        run: |
+          python - <<'PY'
+          import requests, os
+          def ok(n):
+              try: return requests.get(f'https://www.dhlottery.co.kr/common.do?method=getLottoNumber&drwNo={n}',timeout=10).json().get('returnValue')=='success'
+              except: return False
+          lo, hi = 1000, 2000
+          while ok(hi): lo, hi = hi, hi*2
+          while lo+1<hi:
+              m=(lo+hi)//2
+              lo = m if ok(m) else lo
+              hi = hi if ok(m)==False else hi
+              if ok(m)==False: hi=m
+          print('latest:', lo)
+          with open(os.environ['GITHUB_OUTPUT'],'a') as f: f.write(f"latest={lo}\n")
+          PY
+
+      - name: Scrape winners (601..latest)
+        run: |
+          python scraper_winners.py --start 601 --end ${{ steps.latest.outputs.latest }} --verbose
+
+      - name: Merge winners (dedupe by draw/rank/store_name/address_full)
+        run: |
+          python - <<'PY'
+          import os, pandas as pd
+          src = 'data/winners_raw.csv'
+          df = pd.read_csv(src)
+          df = df.drop_duplicates(subset=['draw','rank','store_name','address_full'])
+          df = df.sort_values(['draw','rank'])
+          df.to_csv(src, index=False, encoding='utf-8')
+          print('winners merged:', len(df))
+          PY
+
+      - name: Match & score
+        run: python match_and_score.py
+
+      - name: Geocode with Kakao (cached)
+        run: python geocode_kakao.py
+
+      - name: Publish to web/data
+        run: |
+          mkdir -p web/data
+          cp -f data/lottang_stores_geo.csv web/data/lottang_stores_geo.csv
+          cp -f data/lottang_stores_scored.csv web/data/lottang_stores_scored.csv
+
+      - name: Bump build version
+        id: ver
+        run: echo "VER=v$(date +%Y%m%d%H%M%S)" >> $GITHUB_OUTPUT
+      - name: Apply build version
+        run: |
+          sed -i -E "s/const BUILD_VERSION = \"v[^\"]*\"/const BUILD_VERSION = \"${{ steps.ver.outputs.VER }}\"/g" web/app.js
+
+      - name: Commit & push
+        run: |
+          git config user.name "lottang-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add -A
+          git commit -m "bootstrap: full winners + score + geocode (${{ steps.ver.outputs.VER }})" || echo "no changes"
+          git push || true
