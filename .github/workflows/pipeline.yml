@@ -1,0 +1,104 @@
+name: Lottang Weekly Update (latest draw only)
+
+on:
+  schedule:
+    # 매주 토요일 23:30 (KST) == 토요일 14:30 (UTC)
+    - cron: '30 14 * * 6'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: lottang-weekly
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      # Secrets → geocode_kakao.py에서 os.getenv("KAKAO_REST_API_KEY")로 읽음
+      KAKAO_REST_API_KEY: ${{ secrets.KAKAO_REST_API_KEY }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Mask key
+        run: echo "::add-mask::${KAKAO_REST_API_KEY}"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install deps
+        run: |
+          pip install -r requirements.txt || pip install requests beautifulsoup4 pandas python-dateutil tqdm
+
+      - name: Find latest draw
+        id: latest
+        run: |
+          python - <<'PY'
+          import requests, os
+          def ok(n):
+              try:
+                  j = requests.get(
+                      f'https://www.dhlottery.co.kr/common.do?method=getLottoNumber&drwNo={n}',
+                      timeout=10
+                  ).json()
+                  return j.get('returnValue') == 'success'
+              except Exception:
+                  return False
+          lo, hi = 1000, 2000
+          while ok(hi):
+              lo, hi = hi, hi*2
+          while lo + 1 < hi:
+              mid = (lo + hi) // 2
+              if ok(mid): lo = mid
+              else: hi = mid
+          latest = lo
+          print("latest draw:", latest)
+          with open(os.environ['GITHUB_OUTPUT'],'a') as f:
+              f.write(f"latest={latest}\n")
+          PY
+
+      - name: Scrape winners (latest only)
+        run: |
+          python scraper_winners.py --start ${{ steps.latest.outputs.latest }} --end ${{ steps.latest.outputs.latest }} --verbose
+
+      - name: Match & score
+        run: |
+          python match_and_score.py
+
+      - name: Geocode with Kakao
+        run: |
+          python geocode_kakao.py
+
+      - name: Move outputs to web/data
+        run: |
+          mkdir -p web/data
+          cp -f data/lottang_stores_geo.csv web/data/lottang_stores_geo.csv
+          cp -f data/lottang_stores_scored.csv web/data/lottang_stores_scored.csv
+
+      - name: Bump build version (timestamp)
+        id: ver
+        run: echo "VER=v$(date +%Y%m%d%H%M%S)" >> $GITHUB_OUTPUT
+
+      - name: Apply build version to app.js
+        run: |
+          sed -i -E "s/const BUILD_VERSION = \"v[^\"]*\"/const BUILD_VERSION = \"${{ steps.ver.outputs.VER }}\"/g" web/app.js
+
+      - name: Commit & push
+        run: |
+          git config user.name  "lottang-bot"
+          git config user.email "bot@users.noreply.github.com"
+          if ! git diff --quiet; then
+            git add -A
+            git commit -m "chore: weekly update (draw ${{ steps.latest.outputs.latest }}) / ${{ steps.ver.outputs.VER }}"
+            git push
+          else
+            echo "No changes to commit."
+          fi
