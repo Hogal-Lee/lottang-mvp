@@ -1,0 +1,104 @@
+name: Lottang Weekly Incremental
+
+on:
+  schedule:
+    # 매주 토요일 23:30 KST == 토요일 14:30 UTC
+    - cron: '30 14 * * 6'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: lottang-weekly
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      KAKAO_REST_API_KEY: ${{ secrets.KAKAO_REST_API_KEY }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install deps
+        run: |
+          pip install -r requirements.txt || pip install requests beautifulsoup4 pandas python-dateutil tqdm
+
+      - name: Find latest draw
+        id: latest
+        run: |
+          python - <<'PY'
+          import requests, os
+          def ok(n):
+              try: return requests.get(f'https://www.dhlottery.co.kr/common.do?method=getLottoNumber&drwNo={n}',timeout=10).json().get('returnValue')=='success'
+              except: return False
+          lo, hi = 1000, 2000
+          while ok(hi): lo, hi = hi, hi*2
+          while lo+1<hi:
+              m=(lo+hi)//2
+              lo = m if ok(m) else lo
+              if not ok(m): hi=m
+          with open(os.environ['GITHUB_OUTPUT'],'a') as f: f.write(f"latest={lo}\n")
+          PY
+
+      - name: Backup existing winners (if any)
+        run: |
+          mkdir -p data
+          if [ -f data/winners_raw.csv ]; then cp data/winners_raw.csv data/winners_prev.csv; fi
+
+      - name: Scrape winners (latest only)
+        run: |
+          python scraper_winners.py --start ${{ steps.latest.outputs.latest }} --end ${{ steps.latest.outputs.latest }} --verbose
+          # 결과가 data/winners_raw.csv 로 덮였으면 이름 바꿔서 합칠 준비
+          if [ -f data/winners_raw.csv ]; then mv data/winners_raw.csv data/winners_latest.csv; fi
+          # 이전본 없으면 빈 파일 생성
+          if [ ! -f data/winners_prev.csv ]; then echo "draw,rank,store_name,address_full" > data/winners_prev.csv; fi
+
+      - name: Merge winners (append + dedupe)
+        run: |
+          python - <<'PY'
+          import pandas as pd
+          prev = pd.read_csv('data/winners_prev.csv')
+          new  = pd.read_csv('data/winners_latest.csv')
+          df = pd.concat([prev, new], ignore_index=True)
+          df = df.drop_duplicates(subset=['draw','rank','store_name','address_full'])
+          df = df.sort_values(['draw','rank'])
+          df.to_csv('data/winners_raw.csv', index=False, encoding='utf-8')
+          print('merged length:', len(df))
+          PY
+
+      - name: Match & score
+        run: python match_and_score.py
+
+      - name: Geocode with Kakao (cached)
+        run: python geocode_kakao.py
+
+      - name: Publish to web/data
+        run: |
+          mkdir -p web/data
+          cp -f data/lottang_stores_geo.csv web/data/lottang_stores_geo.csv
+          cp -f data/lottang_stores_scored.csv web/data/lottang_stores_scored.csv
+
+      - name: Bump build version
+        id: ver
+        run: echo "VER=v$(date +%Y%m%d%H%M%S)" >> $GITHUB_OUTPUT
+      - name: Apply build version
+        run: |
+          sed -i -E "s/const BUILD_VERSION = \"v[^\"]*\"/const BUILD_VERSION = \"${{ steps.ver.outputs.VER }}\"/g" web/app.js
+
+      - name: Commit & push
+        run: |
+          git config user.name "lottang-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add -A
+          git commit -m "weekly: append draw ${{ steps.latest.outputs.latest }} / ${{ steps.ver.outputs.VER }}" || echo "no changes"
+          git push || true
