@@ -63,17 +63,51 @@ jobs:
           # 이전본 없으면 빈 파일 생성
           if [ ! -f data/winners_prev.csv ]; then echo "draw,rank,store_name,address_full" > data/winners_prev.csv; fi
 
-      - name: Merge winners (append + dedupe)
+      - name: Merge winners (append + dedupe - robust)
         run: |
           python - <<'PY'
-          import pandas as pd
-          prev = pd.read_csv('data/winners_prev.csv')
-          new  = pd.read_csv('data/winners_latest.csv')
+          import os, pandas as pd
+
+          prev = pd.read_csv('data/winners_prev.csv', encoding='utf-8-sig')
+          new  = pd.read_csv('data/winners_latest.csv', encoding='utf-8-sig')
           df = pd.concat([prev, new], ignore_index=True)
-          df = df.drop_duplicates(subset=['draw','rank','store_name','address_full'])
-          df = df.sort_values(['draw','rank'])
+
+          alias_map = {
+              'draw':        ['draw','no','회차'],
+              'rank':        ['rank','등수'],
+              'store_name':  ['store_name','상호','상호명','상호명(가게)'],
+              'address_full':['address_full','address','주소']
+          }
+          rename = {}
+          lower_cols = {c.lower(): c for c in df.columns}
+          for std, aliases in alias_map.items():
+              for a in aliases:
+                  key = a.lower()
+                  if key in lower_cols:
+                      rename[ lower_cols[key] ] = std
+                      break
+          df = df.rename(columns=rename)
+
+          required = ['draw','rank','store_name','address_full']
+          present  = [c for c in required if c in df.columns]
+          if len(present) < 2:
+              raise SystemExit(f"Not enough columns in merged winners: {df.columns.tolist()}")
+
+          if 'draw' in df.columns:
+              df['draw'] = pd.to_numeric(df['draw'], errors='coerce').fillna(0).astype(int)
+          if 'rank' in df.columns:
+              df['rank'] = df['rank'].astype(str).str.extract(r'(\d)').fillna('')
+
+          for c in ['store_name','address_full']:
+              if c in df.columns:
+                  df[c] = df[c].astype(str).str.strip()
+
+          df = df.drop_duplicates(subset=present)
+          sort_keys = ['draw','rank'] if all(k in df.columns for k in ['draw','rank']) else present
+          df = df.sort_values(sort_keys)
+
           df.to_csv('data/winners_raw.csv', index=False, encoding='utf-8')
-          print('merged length:', len(df))
+          print('merged length:', len(df), 'columns:', df.columns.tolist())
           PY
 
       - name: Match & score
