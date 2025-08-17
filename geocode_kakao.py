@@ -5,10 +5,15 @@ import pandas as pd
 from dotenv import load_dotenv
 from tqdm import tqdm
 
+# .env 로컬 개발용 환경변수 로드
 load_dotenv()
-REST_KEY = os.getenv("KAKAO_REST_API_KEY")
+
+# ✅ B안: 둘 중 아무 이름이나 지원 (실수 방지)
+# - GitHub Actions Secrets: KAKAO_REST_API_KEY 권장
+# - 혹시 다른 이름(KAKAO_REST_KEY)으로 저장해도 동작
+REST_KEY = os.getenv("KAKAO_REST_API_KEY") or os.getenv("KAKAO_REST_KEY")
 if not REST_KEY:
-    raise SystemExit("KAKAO_REST_API_KEY not set in .env")
+    raise SystemExit("Kakao REST key not found. Set KAKAO_REST_API_KEY (or KAKAO_REST_KEY) in environment/.env")
 
 HEADERS = {"Authorization": f"KakaoAK {REST_KEY}"}
 API_ADDR = "https://dapi.kakao.com/v2/local/search/address.json"
@@ -40,7 +45,7 @@ def main():
     os.makedirs("data", exist_ok=True)
     df = pd.read_csv(SRC)
 
-    # 재개 지원: 기존 결과 읽기
+    # 재개 지원: 기존 결과 읽기(캐시)
     cache = {}
     if os.path.exists(DST):
         try:
@@ -74,8 +79,8 @@ def main():
                     lat, lng = try_keyword(q)
                     if lat and lng:
                         break
-                except requests.HTTPError as e:
-                    # 429(쿼터) 등 → 백오프
+                except requests.HTTPError:
+                    # 429 등 → 백오프
                     sleep = 1.5 + attempt * 1.5
                     time.sleep(sleep)
                 except Exception:
